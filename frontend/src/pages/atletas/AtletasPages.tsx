@@ -1,12 +1,9 @@
-import ListAtletas from "@/pages/atletas/components/ListAtletas";
+import { Outlet } from 'react-router-dom';
 
 export default function AtletasPages() {
   return (
-    <div>
-
-      <ListAtletas />
-
-
+    <div className="animate-fade-in">
+      <Outlet />
     </div>
   )
 }

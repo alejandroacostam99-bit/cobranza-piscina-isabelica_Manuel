@@ -279,6 +279,7 @@ const EntrenadorPerfil: React.FC = () => {
                         className={`w-28 pl-9 pr-2 rounded-l-lg border-r-0 cursor-pointer appearance-none ${inputBaseClass}`}
                     >
                         <option value="0412">0412</option>
+                        <option value="0422">0412</option>
                         <option value="0414">0414</option>
                         <option value="0424">0424</option>
                         <option value="0416">0416</option>
@@ -386,7 +387,7 @@ const EntrenadorPerfil: React.FC = () => {
 
                     {/* BOTÓN VER CLASE */}
                     <button 
-                      onClick={() => navigate(`/clases/${clase.id}`)}
+                      onClick={() => navigate(`/entrenadores/clases/${clase.id}`)}
                       className="flex items-center gap-2 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition-colors border border-blue-100 hover:border-blue-200"
                     >
                       <FaEye className="text-sm" /> Ver Clase

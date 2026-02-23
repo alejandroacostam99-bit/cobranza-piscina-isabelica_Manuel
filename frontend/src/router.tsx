@@ -13,6 +13,9 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import EntrenadorPerfil from "@/pages/entrenadores/components/EntrenadorPerfil";
 import ClasesForm from "@/pages/entrenadores/components/ClasesForm";
 import ClasesDetails from "@/pages/entrenadores/components/ClasesDetails";
+import ListAtletas from "@/pages/atletas/components/ListAtletas";
+import AtletaPerfil from "@/pages/atletas/components/AtletaPerfil";
+import AtletaMatricular from "@/pages/atletas/components/AtletaMatricular";
 
 export const router = createBrowserRouter([
   { 
@@ -29,7 +32,14 @@ export const router = createBrowserRouter([
         element: <DashboardLayout />, 
         children: [
           { index: true, element: <DashboardPages /> },
-          { path: "atletas", element: <AtletasPages /> },
+          { path: "atletas", element: <AtletasPages />,
+            children: [
+              {  element: <ListAtletas /> , index:true},
+              { path: "perfil/:id", element: <AtletaPerfil /> },
+              { path: "matricular/:id", element: <AtletaMatricular /> },
+              {path: "*", element: <Navigate to="/atletas" replace />}
+            ]
+           },
           { path: "entrenadores", element: <EntrenadoresPages />,
             children: [ 
               {  element: <ListEntrenadores /> , index:true},

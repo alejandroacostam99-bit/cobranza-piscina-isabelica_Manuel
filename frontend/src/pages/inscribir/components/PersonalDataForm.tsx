@@ -114,11 +114,12 @@ export const PersonalDataForm: React.FC<Props> = ({ formData, handleChange, age,
                    onChange={handleChange}
                    className={`bg-gray-100 border border-gray-300 border-r-0 rounded-l-lg text-sm px-2 py-2.5 outline-none focus:bg-white focus:border-blue-500 transition-colors cursor-pointer text-center font-bold text-gray-700 w-20`}
                >
-                   <option value="0412">0412</option>
-                   <option value="0414">0414</option>
-                   <option value="0424">0424</option>
-                   <option value="0416">0416</option>
-                   <option value="0426">0426</option>
+                <option value="0412">0412</option>
+                        <option value="0422">0412</option>
+                        <option value="0414">0414</option>
+                        <option value="0424">0424</option>
+                        <option value="0416">0416</option>
+                        <option value="0426">0426</option>
                </select>
             <input 
                 type="tel" 

@@ -177,7 +177,7 @@ const ListEntrenadores: React.FC = () => {
           {filteredEntrenadores.map((entrenador) => (
             <div 
               key={entrenador.id} 
-              className={`
+              className={` 
                 rounded-xl shadow-sm border overflow-hidden transition-all duration-300
                 ${entrenador.activo 
                   ? 'bg-white border-slate-100 hover:shadow-xl' 
@@ -229,7 +229,7 @@ const ListEntrenadores: React.FC = () => {
                   onClick={(e) => { e.stopPropagation(); handleToggleStatus(entrenador); }}
                   disabled={updatingId === entrenador.id}
                   className={`
-                    flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full border transition-all
+                    cursor-pointer flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full border transition-all
                     ${entrenador.activo 
                       ? 'text-red-500 border-red-200 hover:bg-red-50' 
                       : 'text-green-600 border-green-200 hover:bg-green-50'}
@@ -241,10 +241,10 @@ const ListEntrenadores: React.FC = () => {
                 </button>
 
                 <button 
-                  className="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors group/btn"
+                  className="cursor-pointer flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors group/btn"
                   onClick={() => navigate(`/entrenadores/perfil/${entrenador.id}`)} 
                 >
-                  Ver Perfil <FaArrowRight className="text-xs group-hover/btn:translate-x-1 transition-transform" />
+                  Ver Perfil <FaArrowRight className="cursor-pointer text-xs group-hover/btn:translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>

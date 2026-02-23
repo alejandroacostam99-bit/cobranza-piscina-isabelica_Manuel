@@ -1,0 +1,4743 @@
+
+==================================================
+ARCHIVO: .\components.json
+==================================================
+
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/index.css",
+    "baseColor": "slate",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  },
+  "registries": {}
+}
+
+
+==================================================
+ARCHIVO: .\eslint.config.js
+==================================================
+
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+  },
+])
+
+
+==================================================
+ARCHIVO: .\index.html
+==================================================
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>gestion_pagos</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
+
+==================================================
+ARCHIVO: .\package.json
+==================================================
+
+{
+  "name": "gestion_pagos",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.562.0",
+    "pocketbase": "^0.26.7",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^7.13.0",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss": "^4.1.18"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react-swc": "^4.2.2",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "tw-animate-css": "^1.4.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.4",
+    "vite": "^7.2.4"
+  }
+}
+
+
+==================================================
+ARCHIVO: .\proyecto.py
+==================================================
+
+import os
+
+# Nombre del archivo que vamos a crear
+output_file = 'proyecto_completo.txt'
+
+# Carpetas que NO queremos leer (Basura o muy pesadas)
+ignore_dirs = {'.git', 'node_modules', 'dist', 'build', '.vscode', '__pycache__'}
+
+# Archivos que NO queremos leer (El propio script, candados, imágenes)
+ignore_files = {'package-lock.json', 'yarn.lock', 'unificar.py', output_file, '.DS_Store'}
+
+# Extensiones permitidas (Solo queremos código, no imágenes ni ejecutables)
+allowed_extensions = {'.js', '.jsx', '.ts', '.tsx', '.html', '.css', '.json', '.py', '.md'}
+
+def is_text_file(filename):
+    return any(filename.endswith(ext) for ext in allowed_extensions)
+
+# Abrimos el archivo final para empezar a escribir
+with open(output_file, 'w', encoding='utf-8') as outfile:
+    # 'os.walk' recorre todas las carpetas y subcarpetas
+    for root, dirs, files in os.walk('.'):
+        # Filtramos para que no entre en carpetas ignoradas
+        dirs[:] = [d for d in dirs if d not in ignore_dirs]
+        
+        for file in files:
+            # Si el archivo está en la lista negra o no es código, lo saltamos
+            if file in ignore_files or not is_text_file(file):
+                continue
+                
+            # Creamos la ruta completa del archivo
+            path = os.path.join(root, file)
+            
+            # Escribimos un separador visual para que la IA sepa dónde empieza el archivo
+            outfile.write(f"\n{'='*50}\n")
+            outfile.write(f"ARCHIVO: {path}\n")
+            outfile.write(f"{'='*50}\n\n")
+            
+            # Leemos el contenido del archivo original y lo copiamos
+            try:
+                with open(path, 'r', encoding='utf-8') as infile:
+                    outfile.write(infile.read())
+            except Exception as e:
+                outfile.write(f"[Error leyendo archivo: {e}]")
+            
+            outfile.write("\n")
+
+print(f"✅ ¡LISTO! Se ha creado el archivo '{output_file}'.")
+print("👉 Ahora arrastra ese archivo al chat de la IA.")
+
+==================================================
+ARCHIVO: .\README.md
+==================================================
+
+# React + TypeScript + Vite
+
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+
+Currently, two official plugins are available:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+
+## React Compiler
+
+The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
+
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
+
+
+==================================================
+ARCHIVO: .\tsconfig.app.json
+==================================================
+
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "types": ["vite/client"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": ["src"]
+}
+
+
+==================================================
+ARCHIVO: .\tsconfig.json
+==================================================
+
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }],
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }},
+  
+}
+
+
+==================================================
+ARCHIVO: .\tsconfig.node.json
+==================================================
+
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "types": ["node"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["vite.config.ts"]
+}
+
+
+==================================================
+ARCHIVO: .\vite.config.ts
+==================================================
+
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react-swc'
+import path from "path"
+import tailwindcss from "@tailwindcss/vite"
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  base: '/',
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },build: {
+    outDir: '../backend/pb_public', 
+    
+    // Esto borra el contenido viejo de pb_public antes de compilar (recomendado)
+    emptyOutDir: true, 
+  }
+})
+
+==================================================
+ARCHIVO: .\src\index.css
+==================================================
+
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@import "tailwindcss";
+
+@theme {
+  --font-titulo: "Akira", sans-serif;
+}
+
+@font-face {
+  font-family: 'Coolvetica';
+  src: url('./fonts/coolvetica.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'Akira';
+  src: url('./fonts/akira_expanded.otf') format('opentype');
+}
+
+==================================================
+ARCHIVO: .\src\main.tsx
+==================================================
+
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import { RouterProvider } from 'react-router-dom'
+import { router } from '@/router'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <RouterProvider router={router} />
+  </StrictMode>,
+)
+
+
+==================================================
+ARCHIVO: .\src\router.tsx
+==================================================
+
+
+import ProtectedAuth from "@/components/ProtectedAuth";
+import DashboardLayout from "@/layouts/DashboardLayout";
+import AtletasPages from "@/pages/atletas/AtletasPages";
+import DashboardPages from "@/pages/dashboard/DashboardPages";
+import EntrenadoresForm from "@/pages/entrenadores/components/EntrenadoresForm";
+import ListClases from "@/pages/entrenadores/components/ListClases";
+import ListEntrenadores from "@/pages/entrenadores/components/ListEntrenadores";
+import EntrenadoresPages from "@/pages/entrenadores/EntrenadoresPages";
+import InscribirPages from "@/pages/inscribir/InscribirPages";
+import LoginPage from "@/pages/login/LoginPage";
+import { createBrowserRouter, Navigate } from "react-router-dom";
+import EntrenadorPerfil from "@/pages/entrenadores/components/EntrenadorPerfil";
+import ClasesForm from "@/pages/entrenadores/components/ClasesForm";
+import ClasesDetails from "@/pages/entrenadores/components/ClasesDetails";
+
+export const router = createBrowserRouter([
+  { 
+    path: "/login",
+    element: <LoginPage />, 
+  },
+  {
+
+    element: <ProtectedAuth />, 
+    path: "/",
+    children: [
+      {
+        path: "/",
+        element: <DashboardLayout />, 
+        children: [
+          { index: true, element: <DashboardPages /> },
+          { path: "atletas", element: <AtletasPages /> },
+          { path: "entrenadores", element: <EntrenadoresPages />,
+            children: [ 
+              {  element: <ListEntrenadores /> , index:true},
+              { path: "crear", element: <EntrenadoresForm /> },
+              { path: "clases", element: <ListClases /> },
+              { path: "horarios", element: <ClasesForm /> },
+              { path: "perfil/:id", element: <EntrenadorPerfil /> },
+              { path: "clases/:id", element: <ClasesDetails /> },
+              {path: "*", element: <Navigate to="/entrenadores" replace />}
+            ]
+          },
+          { path: "inscribir", element: <InscribirPages/> },
+        
+        ]
+      }
+    ]
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />
+  }
+])
+
+==================================================
+ARCHIVO: .\src\components\Footer.tsx
+==================================================
+
+
+
+export default function Footer() {
+  return (
+    <div>Footer</div>
+  )
+}
+
+
+==================================================
+ARCHIVO: .\src\components\Header.tsx
+==================================================
+
+
+export default function Header() {
+  return (
+    <div>Header</div>
+  )
+}
+
+
+==================================================
+ARCHIVO: .\src\components\InputGroup.tsx
+==================================================
+
+import React from 'react';
+
+interface InputGroupProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+  required?: boolean;
+}
+
+export const InputGroup: React.FC<InputGroupProps> = ({ label, required, className, ...props }) => (
+  <div>
+    <label className="text-xs font-bold text-gray-500 ml-1">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    <input 
+      className={`w-full border border-gray-300 rounded-lg p-2.5 uppercase focus:outline-none focus:border-blue-500 text-sm ${className}`} 
+      {...props}
+    />
+  </div>
+);
+
+==================================================
+ARCHIVO: .\src\components\Menu.tsx
+==================================================
+
+import { NavLink } from "react-router-dom";
+import { 
+  MdDashboard, 
+  MdGroups, 
+  MdPersonAdd, 
+  MdSportsKabaddi, 
+  MdPayments, 
+  MdPool, 
+  MdClose 
+} from "react-icons/md";
+
+export default function Menu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  const menuItems = [
+    { label: 'Inicio', icon: <MdDashboard size={24} />, path: '/' },
+    { label: 'Atletas', icon: <MdGroups size={24} />, path: '/atletas' },
+    { label: 'Inscribir', icon: <MdPersonAdd size={24} />, path: '/inscribir' },
+    { label: 'Entrenadores', icon: <MdSportsKabaddi size={24} />, path: '/entrenadores' },
+    { label: 'Pagos', icon: <MdPayments size={24} />, path: '/pagos' },
+  ];
+
+  return (
+    <>
+
+      <div 
+        className={`fixed inset-0 bg-gray-900/50 z-30 lg:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={onClose}
+      />
+
+      <aside 
+        className={`
+          fixed lg:static inset-y-0 left-0 z-40 
+          w-72 h-full flex flex-col shrink-0 
+          bg-white border-r border-gray-200 shadow-xl lg:shadow-none
+          transform transition-transform duration-300 ease-in-out
+          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
+        <div className="p-6 flex flex-col h-full">
+          
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+
+                <MdPool size={26} /> 
+              </div>
+              <h1 className="text-xl font-bold leading-tight text-gray-900">Swim Admin</h1>
+            </div>
+            <button onClick={onClose} className="lg:hidden text-gray-500 hover:text-gray-700">
+              
+              <MdClose size={24} />
+            </button>
+          </div>
+
+          {/* Nav */}
+          <nav className="flex flex-col gap-2 flex-1 overflow-y-auto">
+            {menuItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={() => onClose()} // Cierra el menú al hacer click en móvil
+                end={item.path === '/'} // 'end' asegura que "/" no se marque siempre activo
+                className={({ isActive }) => `
+                  flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors
+                  ${isActive 
+                    ? 'bg-blue-100 text-blue-600' // Estilo Activo
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900' // Estilo Inactivo
+                  }
+                `}
+              >
+                <span className="material-symbols-outlined">{item.icon}</span>
+                {item.label}
+              </NavLink>
+            ))}
+          </nav>
+
+          <div className="mt-auto pt-6 border-t border-gray-200 flex items-center gap-3">
+            
+            <div>
+              <p className="text-sm font-bold text-gray-900">Sistema de gestion de cobranzas</p>
+              <p className="text-xs text-gray-500">Administrador</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+}
+
+
+==================================================
+ARCHIVO: .\src\components\ProtectedAuth.tsx
+==================================================
+
+
+import { pb } from '@/lib/pb';
+import { Navigate, Outlet } from 'react-router-dom';
+
+const ProtectedAuth = ({ redirectPath = '/login' }) => {
+  // pb.authStore.isValid comprueba si hay un token y si no ha expirado
+  if (!pb.authStore.isValid) {
+    return <Navigate to={redirectPath} replace />;
+  }
+
+  // Si está autenticado, renderiza los componentes hijos
+  return <Outlet />;
+};
+
+export default ProtectedAuth;
+
+==================================================
+ARCHIVO: .\src\layouts\DashboardLayout.tsx
+==================================================
+
+
+import Menu from "@/components/Menu";
+import { useState } from "react";
+import { MdMenu } from "react-icons/md";
+import { Outlet } from "react-router-dom";
+
+export default function DashboardLayout() {
+ const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  return (
+    <div className="flex w-full h-screen bg-gray-50">
+      
+      <Menu 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+      />
+
+      <div className="flex-1 flex flex-col w-full">
+        
+        <header className="lg:hidden bg-white p-4 border-b border-gray-200 flex items-center gap-3 sticky top-0 z-20">
+          <button onClick={() => setIsSidebarOpen(true)} className="text-gray-600 hover:bg-gray-100 p-2 rounded-lg">
+            <MdMenu size={24} />
+          </button>
+          <span className="font-bold text-gray-900">Menú</span>
+        </header>
+
+        <main className="p-6 flex-1 overflow-x-hidden">
+          <Outlet /> 
+        </main>
+        
+      </div>
+    </div>
+  );
+}
+
+
+==================================================
+ARCHIVO: .\src\lib\pb.ts
+==================================================
+
+import PocketBase from 'pocketbase';
+
+// 1. Cambia esto por la URL de tu servidor (ej. en producción o localhost)
+const POCKETBASE_URL = 'http://127.0.0.1:8090';
+
+// 2. Instancia "Singleton"
+export const pb = new PocketBase(POCKETBASE_URL);
+
+// 3. (Opcional) Desactivar la auto-cancelación de peticiones
+// Esto evita que si haces 2 clicks rápidos, se cancele la primera petición.
+pb.autoCancellation(false);
+
+==================================================
+ARCHIVO: .\src\lib\utils.ts
+==================================================
+
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
+
+==================================================
+ARCHIVO: .\src\pages\atletas\AtletasPages.tsx
+==================================================
+
+import ListAtletas from "@/pages/atletas/components/ListAtletas";
+
+export default function AtletasPages() {
+  return (
+    <div>
+
+      <ListAtletas />
+
+
+    </div>
+  )
+}
+
+
+==================================================
+ARCHIVO: .\src\pages\atletas\components\ListAtletas.tsx
+==================================================
+
+
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { 
+  FaUserAstronaut, 
+  FaIdCard, 
+  FaPhoneAlt, 
+  FaMapMarkerAlt, 
+  FaSpinner, 
+  FaChevronRight,
+  FaSearch
+} from 'react-icons/fa';
+import type { Atleta } from '@/pages/atletas/types';
+import { AtletaError } from '@/pages/atletas/types/error';
+import { getAtletas } from '@/pages/atletas/services/getAtletas';
+
+const ListAtletas: React.FC = () => {
+  const navigate = useNavigate();
+  const [atletas, setAtletas] = useState<Atleta[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [filter, setFilter] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getAtletas();
+        setAtletas(data);
+      } catch (err) {
+        alert((err as AtletaError).message || 'Error al cargar atletas');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const filteredAtletas = atletas.filter(a => 
+    `${a.nombre} ${a.apellido}`.toLowerCase().includes(filter.toLowerCase()) || 
+    a.cedula.includes(filter)
+  );
+
+  if (loading) return (
+    <div className="flex flex-col justify-center items-center h-screen text-cyan-600">
+      <FaSpinner className="animate-spin text-6xl mb-4" />
+      <p className="font-bold tracking-widest uppercase text-sm">Sincronizando Atletas...</p>
+    </div>
+  );
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      {/* Header con Buscador */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 border-b border-slate-200 pb-6">
+        <div>
+          <h2 className="text-3xl font-extrabold text-slate-800">
+            Censo de <span className="text-cyan-600">Atletas</span>
+          </h2>
+          <p className="text-slate-500">Listado oficial de nadadores inscritos.</p>
+        </div>
+        
+        <div className="relative">
+          <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input 
+            type="text"
+            placeholder="Buscar por nombre o cédula..."
+            className="pl-10 pr-4 py-2 border border-slate-200 rounded-full bg-white focus:ring-2 focus:ring-cyan-500 outline-none w-full md:w-80 transition-all"
+            onChange={(e) => setFilter(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Grid de Atletas */}
+      {filteredAtletas.length === 0 ? (
+        <div className="text-center py-20 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
+          <p className="text-slate-400">No se encontraron atletas que coincidan con la búsqueda.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {filteredAtletas.map((atleta) => (
+            <div 
+              key={atleta.id}
+              className="group bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer"
+              onClick={() => navigate(`/atletas/detalle/${atleta.id}`)}
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-12 w-12 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 group-hover:bg-cyan-600 group-hover:text-white transition-colors">
+                  <FaUserAstronaut size={20} />
+                </div>
+                <div className="overflow-hidden">
+                  <h3 className="font-bold text-slate-800 truncate">{atleta.nombre} {atleta.apellido}</h3>
+                  <p className="text-xs text-slate-400 flex items-center gap-1">
+                    <FaIdCard /> {atleta.cedula}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-sm border-t border-slate-50 pt-3">
+                <div className="flex items-center gap-2 text-slate-600">
+                  <FaPhoneAlt className="text-cyan-500 text-xs" />
+                  <span className="font-mono text-xs">{atleta.telefono || 'N/A'}</span>
+                </div>
+                <div className="flex items-start gap-2 text-slate-500 italic">
+                  <FaMapMarkerAlt className="text-cyan-500 text-xs mt-1 shrink-0" />
+                  <span className="text-xs line-clamp-1">{atleta.direccion || 'Sin dirección'}</span>
+                </div>
+              </div>
+
+              <div className="mt-4 flex justify-between items-center text-xs font-bold text-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span>VER MATRÍCULAS</span>
+                <FaChevronRight />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ListAtletas;
+
+==================================================
+ARCHIVO: .\src\pages\atletas\services\getAtletas.ts
+==================================================
+
+
+import { pb } from '@/lib/pb';
+import type { Atleta } from '../types';
+import {AtletaNotGetError } from '../types/error';
+
+export const getAtletas = async (): Promise<Atleta[]> => {
+  try {
+    // Obtenemos todos los registros de la colección 'atletas'
+    // sorted por nombre para que aparezcan ordenados en la lista
+    const records = await pb.collection('atletas').getFullList<Atleta>({
+      filter: 'activo = true',
+      sort: 'nombre',
+    });
+
+    return records;
+  } catch (error) {
+    console.error('Error fetching atletas:', error);
+    
+    
+    throw new AtletaNotGetError(
+        'Error al obtener atletas.'
+    );
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\atletas\types\error.ts
+==================================================
+
+export class AtletaError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AtletaError';
+  }
+}
+
+export class AtletaNotGetError extends AtletaError {}
+
+==================================================
+ARCHIVO: .\src\pages\atletas\types\index.ts
+==================================================
+
+
+export interface Atleta   {
+  id: string;
+  nombre: string;
+  apellido: string;
+  cedula: string;
+  telefono: string;
+  direccion: string;
+  activo: boolean;
+  fecha_nacimiento: string; 
+    representante_nombre?: string;
+    representante_cedula?: string;
+    condicion_medica?: string;
+  // Campos de PocketBase (opcionales pero útiles)
+  created?: string;
+  updated?: string;
+}
+
+==================================================
+ARCHIVO: .\src\pages\dashboard\DashboardPages.tsx
+==================================================
+
+
+
+export default function DashboardPages() {
+  return (
+    <div>
+        
+        <h1 className="text-4xl font-titulo text-center uppercase font-black mb-4">Sistema de gestion de cobranzas</h1>
+      
+      <div className=" flex justify-around mb-4">
+        <div className=" p-4 border rounded-lg mr-2">
+          <h2 className="text-xl font-semibold mb-2">Lista de Atletas activos</h2>
+        </div>
+        <div className=" p-4 border rounded-lg mr-2">
+          <h2 className="text-xl font-semibold mb-2">Lista de Atletas deudores</h2>
+        </div>
+        <div className=" p-4 border rounded-lg mr-2">
+          <h2 className="text-xl font-semibold mb-2">Lista de profesores</h2>
+        </div>
+        <div className=" p-4 border rounded-lg mr-2">
+          <h2 className="text-xl font-semibold mb-2">Lista de pagos sin consilar</h2>
+        </div>
+      </div></div>
+  )
+}
+
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\EntrenadoresPages.tsx
+==================================================
+
+import { Outlet, NavLink } from 'react-router-dom';
+import { MdList, MdPersonAdd, MdDateRange } from "react-icons/md";
+
+export default function EntrenadoresPages() {
+  
+  // Función para las clases dinámicas
+  const getButtonClass = ({ isActive }: { isActive: boolean }) => {
+    // Clases base: Diseño general, transición y alineación
+    const baseClass = "flex items-center justify-center gap-2 px-6 py-4 rounded-xl font-bold text-sm transition-all duration-300 border w-full sm:w-auto";
+    
+    // Estado ACTIVO (Azul vibrante)
+    const activeClass = "bg-blue-500 text-white border-blue-500 shadow-lg shadow-blue-500/30 scale-[1.02]";
+    
+    // Estado INACTIVO (Blanco limpio con hover azul suave)
+    const inactiveClass = "bg-white text-gray-400 border-gray-100 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-500 hover:shadow-sm";
+
+    return `${baseClass} ${isActive ? activeClass : inactiveClass}`;
+  };
+
+  return (
+    <div className="p-4 sm:p-8 max-w-6xl mx-auto">
+      
+      {/* --- ENCABEZADO --- */}
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
+            Gestión de Entrenadores
+          </h1>
+          <p className="text-gray-400 text-sm mt-1">
+            Administra la nómina, clases y horarios.
+          </p>
+        </div>
+      </div>
+
+      {/* --- MENÚ DE NAVEGACIÓN --- */}
+      {/* Mobile: Columna (flex-col) | Desktop: Fila (sm:flex-row) */}
+      <nav className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-8">
+        
+        {/* Botón 1: Lista */}
+        <NavLink to="/entrenadores" end className={getButtonClass}>
+          <MdList size={22} />
+          <span>Lista de Entrenadores</span>
+        </NavLink>
+
+         <NavLink to="/entrenadores/clases" className={getButtonClass}>
+          <MdDateRange size={22} />
+          <span>Lista de clases</span>
+        </NavLink>
+
+        {/* Botón 2: Crear */}
+        <NavLink to="/entrenadores/crear" className={getButtonClass}>
+          <MdPersonAdd size={22} />
+          <span>Nuevo Ingreso</span>
+        </NavLink>
+
+        {/* Botón 3: Horarios */}
+        <NavLink to="/entrenadores/horarios" className={getButtonClass}>
+          <MdDateRange size={22} />
+          <span>nueva Clase</span>
+        </NavLink>
+
+      </nav>
+
+      {/* --- CONTENIDO (Formularios / Listas) --- */}
+      {/* Agregamos un fondo sutil o animación de entrada si deseas */}
+      <div className="animate-fade-in">
+        <Outlet />
+      </div>
+
+    </div>
+  );
+}
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\components\ClasesDetails.tsx
+==================================================
+
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+
+// Tipos
+import type { ClaseFull, Matricula, Entrenador } from '@/pages/entrenadores/types';
+
+// Servicios de Lectura
+import { getEntrenadores } from '@/pages/entrenadores/services/getEntrenadores'; 
+
+// Iconos
+import { 
+  FaSwimmingPool, FaArrowLeft, FaPen, FaSave, FaUndo, FaSpinner, 
+  FaClock, FaCalendarDay, FaUserGraduate, FaIdCard, FaPhoneAlt,
+  FaMoneyBillWave, FaChild, FaUserTie, FaCheckCircle, FaTrashAlt
+} from 'react-icons/fa';
+import { MdAddCircle, MdDeleteOutline } from "react-icons/md";
+import { syncHorarios, type SimpleHorario } from '@/pages/entrenadores/services/syncHorarios';
+import { getClaseDetails } from '@/pages/entrenadores/services/getClasesDetails';
+import { DeleteClasesError, GetClasesDetailsError, UpdateClasesError } from '@/pages/entrenadores/types/error';
+import { updateClase } from '@/pages/entrenadores/services/UpdateClase';
+import { deleteClase } from '@/pages/entrenadores/services/deleteClases';
+
+const ClaseDetails: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  // --- Estados de Datos ---
+  const [clase, setClase] = useState<ClaseFull | null>(null);
+  const [matriculas, setMatriculas] = useState<Matricula[]>([]);
+  const [allEntrenadores, setAllEntrenadores] = useState<Entrenador[]>([]);
+  
+  // Estado local para manejar los horarios en la UI (Lista simple)
+  const [scheduleList, setScheduleList] = useState<SimpleHorario[]>([]);
+
+  // --- Estados de UI ---
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [warningMsg, setWarningMsg] = useState<string | null>(null); // Nuevo estado para advertencias parciales
+
+  // --- Estados para el Formulario ---
+  const [formData, setFormData] = useState<Partial<ClaseFull>>({});
+  
+  // Estados temporales para agregar nuevos horarios
+  const [tempDia, setTempDia] = useState('LUNES');
+  const [tempHora, setTempHora] = useState('06:00');
+
+  // Constantes para selectores
+  const diasSemana = ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADOS", "DOMINGO"];
+  const bloquesHora = Array.from({ length: 17 }, (_, i) => {
+    const hora = i + 6;
+    return `${hora < 10 ? '0' + hora : hora}:00`;
+  });
+
+  // --- 1. Cargar Datos Iniciales ---
+  useEffect(() => {
+    if (!id) return;
+
+    const loadAllData = async () => {
+      try {
+        setLoading(true);
+        const [details, entrenadoresList] = await Promise.all([
+          getClaseDetails(id),
+          getEntrenadores()
+        ]);
+        
+        setClase(details.clase);
+        setMatriculas(details.matriculas);
+        setAllEntrenadores(entrenadoresList);
+
+        // Transformamos los horarios complejos de la BD a formato simple para la UI
+        const simpleHorarios = details.horarios.map(h => ({
+            dia: h.expand?.horario_id?.dia || '',
+            hora: h.expand?.horario_id?.hora || ''
+        })).filter(h => h.dia && h.hora);
+
+        setScheduleList(simpleHorarios);
+
+        setFormData({
+          nombre: details.clase.nombre,
+          costo: details.clase.costo,
+          edadMin: details.clase.edadMin,
+          entrenador_id: details.clase.entrenador_id,
+        });
+
+      } catch (err) {
+        if (err instanceof GetClasesDetailsError) {
+          setError(err.message);
+        } else {
+          setError("Error desconocido al cargar los detalles.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAllData();
+  }, [id]);
+
+  // --- Manejadores de Input ---
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    const finalValue = type === 'number' ? Number(value) : value;
+    setFormData(prev => ({ ...prev, [name]: finalValue }));
+  };
+
+  // --- Gestión de Horarios (UI Local) ---
+  const addHorario = () => {
+    const existe = scheduleList.find(h => h.dia === tempDia && h.hora === tempHora);
+    if (existe) return; 
+    setScheduleList([...scheduleList, { dia: tempDia, hora: tempHora }]);
+  };
+
+  const removeHorario = (index: number) => {
+    const newList = [...scheduleList];
+    newList.splice(index, 1);
+    setScheduleList(newList);
+  };
+
+  // --- 2. Guardar Cambios (LOGICA CORREGIDA) ---
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id) return;
+
+    try {
+      setSaving(true);
+      setError(null);
+      setSuccessMsg(null);
+      setWarningMsg(null);
+      
+      // PASO 1: Actualizar Datos Básicos de la Clase
+      const updatedClase = await updateClase(id, formData);
+      
+      // [CORRECCIÓN]: Actualizamos el estado visual INMEDIATAMENTE tras el éxito de la DB.
+      // Si falla el paso 2 (horarios), la UI ya tendrá los datos de la clase actualizados.
+      if (clase) {
+        setClase(prev => prev ? ({ ...prev, ...updatedClase }) : null);
+      }
+
+      // PASO 2: Sincronizar Horarios (Bloque Try/Catch independiente)
+      try {
+        await syncHorarios(id, scheduleList);
+        
+        // Si llegamos aquí, todo salió bien
+        setSuccessMsg("Clase y horarios actualizados correctamente");
+        setIsEditing(false);
+        setTimeout(() => setSuccessMsg(null), 3000);
+
+      } catch (scheduleError) {
+        // Si falla aquí, la clase YA SE GUARDÓ, pero los horarios fallaron.
+        // No lanzamos el error al catch principal para no ocultar el éxito de la clase.
+        console.error("Error en horarios:", scheduleError);
+        setWarningMsg("⚠️ Los datos de la clase se guardaron, pero hubo un error al guardar los horarios. Por favor intente actualizar los horarios nuevamente.");
+        // Mantenemos isEditing(true) para que el usuario pueda reintentar los horarios
+      }
+
+    } catch (err) {
+       // Este catch ahora solo captura errores si falla updateClase (Paso 1)
+       console.error(err);
+       if (err instanceof UpdateClasesError) {
+          setError(err.message);
+       } else {
+          setError("Ocurrió un error crítico al guardar la clase.");
+       }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // --- 3. Eliminar Clase ---
+  const handleDeleteClass = async () => {
+      const confirmacion = window.confirm(
+          "⚠️ ¿Estás seguro que deseas eliminar esta clase?\n\nAl hacerlo, se eliminarán permanentemente todas las matrículas asociadas."
+      );
+
+      if (confirmacion && id) {
+          try {
+              setDeleting(true);
+              await deleteClase(id);
+              navigate('/entrenadores/clases');
+          } catch (err) {
+                if (err instanceof DeleteClasesError) {
+                    setError(err.message);
+                } else { 
+                    setError("Ocurrió un error al eliminar la clase.");
+                }
+              setDeleting(false);
+          }
+      }
+  };
+
+  const handleCancel = () => {
+    // Recargamos para asegurar consistencia
+    window.location.reload(); 
+  };
+
+  // --- Renderizado ---
+
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center h-screen text-blue-600">
+      <FaSpinner className="animate-spin text-5xl mb-4" />
+      <p className="animate-pulse font-medium">Cargando aula...</p>
+    </div>
+  );
+
+  if (!clase) return <div className="p-8 text-center">Clase no encontrada</div>;
+
+  const inputClass = `w-full p-2.5 rounded-lg border transition-all outline-none text-sm ${
+    isEditing 
+      ? 'border-blue-300 focus:ring-2 focus:ring-blue-500/20 bg-white' 
+      : 'border-transparent bg-slate-100 text-slate-600 font-medium'
+  }`;
+
+  const labelClass = "block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1";
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-6xl animate-fade-in pb-24">
+      
+      {/* Botón Volver */}
+      <button 
+        onClick={() => navigate(-1)} 
+        className="mb-6 flex items-center text-slate-500 hover:text-blue-600 transition-colors font-medium text-sm"
+      >
+        <FaArrowLeft className="mr-2" /> Volver al listado
+      </button>
+
+      {/* Encabezado Principal */}
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="flex items-center gap-4">
+          <div className="bg-blue-600 p-4 rounded-xl text-white shadow-blue-200 shadow-lg">
+            <FaSwimmingPool className="text-3xl" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-800">{clase.nombre}</h1>
+            <p className="text-slate-400 text-xs font-mono mt-1">ID: {clase.id}</p>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+           {isEditing ? (
+             <button onClick={handleCancel} className="px-4 py-2 rounded-lg font-semibold flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-600 transition-all text-sm">
+               <FaUndo /> Cancelar
+             </button>
+           ) : (
+             <button onClick={() => setIsEditing(true)} className="px-4 py-2 rounded-lg font-semibold flex items-center gap-2 bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200 transition-all text-sm">
+               <FaPen /> Editar Datos
+             </button>
+           )}
+        </div>
+      </div>
+
+      {/* Contenido Principal */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        {/* COLUMNA IZQUIERDA: Formulario y Horarios */}
+        <div className="lg:col-span-1 space-y-6">
+          
+          {/* Tarjeta 1: Datos Básicos */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+            <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-b border-slate-50 pb-2">
+              <FaPen className="text-blue-500 text-sm" /> Detalles de la Clase
+            </h2>
+
+            {/* Mensajes de Estado */}
+            {error && <div className="mb-4 p-2 bg-red-50 text-red-600 text-xs rounded border border-red-100">{error}</div>}
+            
+            {/* Mensaje de Advertencia (Parcial) */}
+            {warningMsg && <div className="mb-4 p-3 bg-orange-50 text-orange-700 text-xs rounded border border-orange-200 flex items-start gap-2">
+                <span className="text-lg">⚠️</span> 
+                <span>{warningMsg}</span>
+            </div>}
+            
+            {successMsg && <div className="mb-4 p-2 bg-green-50 text-green-600 text-xs rounded border border-green-100 flex items-center gap-1"><FaCheckCircle/> {successMsg}</div>}
+
+            <form onSubmit={handleSave} className="space-y-4">
+              <div>
+                <label className={labelClass}>Nombre de la Clase</label>
+                <input
+                  type="text"
+                  name="nombre"
+                  disabled={!isEditing}
+                  value={formData.nombre || ''}
+                  onChange={handleInputChange}
+                  className={inputClass}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelClass}><FaMoneyBillWave className="inline mr-1"/> Costo ($)</label>
+                  <input
+                    type="number"
+                    name="costo"
+                    disabled={!isEditing}
+                    value={formData.costo || 0}
+                    onChange={handleInputChange}
+                    className={`${inputClass} font-mono`}
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}><FaChild className="inline mr-1"/> Edad Min.</label>
+                  <input
+                    type="number"
+                    name="edadMin"
+                    disabled={!isEditing}
+                    value={formData.edadMin || 0}
+                    onChange={handleInputChange}
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={labelClass}><FaUserTie className="inline mr-1"/> Entrenador</label>
+                <select
+                  name="entrenador_id"
+                  disabled={!isEditing}
+                  value={formData.entrenador_id || ''}
+                  onChange={handleInputChange}
+                  className={inputClass}
+                >
+                  <option value="">Seleccione...</option>
+                  {allEntrenadores.map(ent => (
+                    <option key={ent.id} value={ent.id}>
+                      {ent.nombre} {ent.apellido}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </form>
+          </div>
+
+          {/* Tarjeta 2: Gestión de Horarios */}
+          <div className={`bg-white rounded-2xl shadow-sm border border-slate-100 p-6 transition-colors ${isEditing ? 'border-blue-200 shadow-md' : ''}`}>
+            <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+              <FaClock className="text-orange-400" /> Horarios Asignados
+            </h2>
+            
+            {/* Selector de Horarios (Solo visible al editar) */}
+            {isEditing && (
+                <div className="mb-4 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <label className={labelClass}>Agregar Bloque</label>
+                    <div className="flex gap-2 mb-2">
+                        <select 
+                            value={tempDia} 
+                            onChange={(e) => setTempDia(e.target.value)}
+                            className="flex-1 text-xs p-2 rounded border border-slate-300 outline-none cursor-pointer"
+                        >
+                            {diasSemana.map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                        <select 
+                            value={tempHora} 
+                            onChange={(e) => setTempHora(e.target.value)}
+                            className="flex-1 text-xs p-2 rounded border border-slate-300 outline-none cursor-pointer"
+                        >
+                             {bloquesHora.map(h => <option key={h} value={h}>{h}</option>)}
+                        </select>
+                    </div>
+                    <button 
+                        type="button" 
+                        onClick={addHorario}
+                        className="w-full bg-blue-100 hover:bg-blue-200 text-blue-700 text-xs font-bold py-2 rounded flex items-center justify-center gap-1 transition-colors"
+                    >
+                        <MdAddCircle /> Agregar Horario
+                    </button>
+                </div>
+            )}
+
+            {/* Lista Visual de Horarios */}
+            {scheduleList.length === 0 ? (
+              <p className="text-sm text-slate-400 italic text-center py-4">Sin horarios definidos</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {scheduleList.map((h, index) => (
+                  <div 
+                    key={`${h.dia}-${h.hora}-${index}`} 
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 transition-all 
+                      ${isEditing 
+                        ? 'bg-white border border-blue-200 shadow-sm pr-1' 
+                        : 'bg-orange-50 border border-orange-100 text-orange-700'
+                      }`}
+                  >
+                    <FaCalendarDay className={isEditing ? "text-blue-400" : "text-orange-300"} />
+                    <span className={isEditing ? "text-slate-700" : ""}>{h.dia}</span> 
+                    <span className={isEditing ? "text-slate-300" : "text-orange-300"}>|</span> 
+                    <span className={isEditing ? "text-slate-700" : ""}>{h.hora}</span>
+                    
+                    {isEditing && (
+                        <button 
+                            type="button"
+                            onClick={() => removeHorario(index)}
+                            className="ml-1 p-1 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                            title="Eliminar horario"
+                        >
+                            <MdDeleteOutline size={16} />
+                        </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Botón Guardar Cambios (Global) */}
+          {isEditing && (
+            <button 
+                onClick={handleSave}
+                disabled={saving}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 transition-all flex justify-center items-center gap-2 animate-in fade-in slide-in-from-bottom-4"
+            >
+                {saving ? <FaSpinner className="animate-spin"/> : <FaSave />}
+                Guardar Todos los Cambios
+            </button>
+          )}
+
+          {/* Zona de Peligro (Eliminar Clase) */}
+          {!isEditing && (
+              <div className="mt-8 pt-8 border-t border-slate-100">
+                  <button 
+                    onClick={handleDeleteClass}
+                    disabled={deleting}
+                    className="w-full flex items-center justify-center gap-2 text-red-500 hover:text-white hover:bg-red-500 border border-red-100 hover:border-red-500 bg-red-50 py-3 rounded-xl transition-all font-semibold text-sm group"
+                  >
+                      {deleting ? <FaSpinner className="animate-spin"/> : <FaTrashAlt className="group-hover:animate-bounce" />}
+                      Eliminar Clase Permanentemente
+                  </button>
+              </div>
+          )}
+        </div>
+
+        {/* COLUMNA DERECHA: Lista de Alumnos */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-full min-h-[500px]">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <FaUserGraduate className="text-blue-500" /> Alumnos Matriculados
+              </h2>
+              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
+                Total: {matriculas.length}
+              </span>
+            </div>
+
+            <div className="overflow-y-auto flex-1 p-2">
+              {matriculas.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-64 text-slate-400">
+                  <FaUserGraduate className="text-4xl mb-2 opacity-20" />
+                  <p>No hay alumnos inscritos en esta clase.</p>
+                </div>
+              ) : (
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr>
+                      <th className="p-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Alumno</th>
+                      <th className="p-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Cédula</th>
+                      <th className="p-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider hidden sm:table-cell">Contacto</th>
+                      <th className="p-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-right">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {matriculas.map((mat) => {
+                      const atleta = mat.expand?.atleta_id;
+                      if (!atleta) return null;
+
+                      return (
+                        <tr key={mat.id} className="hover:bg-blue-50/30 transition-colors group">
+                          <td className="p-3">
+                            <div className="font-bold text-slate-700 text-sm">
+                              {atleta.nombre} {atleta.apellido}
+                            </div>
+                          </td>
+                          <td className="p-3">
+                            <div className="flex items-center gap-2 text-slate-500 text-xs font-mono bg-slate-100 w-fit px-2 py-0.5 rounded">
+                              <FaIdCard className="text-slate-400"/>
+                              {atleta.cedula}
+                            </div>
+                          </td>
+                          <td className="p-3 hidden sm:table-cell">
+                             <div className="flex items-center gap-2 text-slate-500 text-xs">
+                              <FaPhoneAlt className="text-slate-300"/>
+                              {atleta.telefono || 'N/A'}
+                            </div>
+                          </td>
+                          <td className="p-3 text-right">
+                            <button 
+                              onClick={() => navigate(`/atletas/perfil/${atleta.id}`)}
+                              className="text-xs font-semibold text-blue-600 hover:text-blue-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              Ver Perfil
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+export default ClaseDetails;
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\components\ClasesForm.tsx
+==================================================
+
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { InputGroup } from '@/components/InputGroup'; 
+
+// Iconos
+import { 
+  MdOutlineClass, 
+  MdSave, 
+  MdAddCircle, 
+  MdDeleteOutline 
+} from "react-icons/md";
+import { 
+  FaClock, 
+  FaCalendarDay, 
+  FaUserGraduate, 
+  FaChalkboardTeacher 
+} from 'react-icons/fa';
+
+// Servicios y Tipos
+import { getEntrenadores } from '@/pages/entrenadores/services/getEntrenadores';
+import type { ClaseFormData, Entrenador } from '@/pages/entrenadores/types';
+import { createClaseConHorarios } from '@/pages/entrenadores/services/createClaseHorario';
+
+
+const ClasesForm: React.FC = () => {
+  const navigate = useNavigate();
+  
+  // Estados de control
+  const [loading, setLoading] = useState(false);
+  const [entrenadores, setEntrenadores] = useState<Entrenador[]>([]);
+  
+  // Estado principal del formulario
+  const [formData, setFormData] = useState<ClaseFormData>({
+    nombre: '',
+    costo: 0,
+    edadMin: 0,
+    entrenador_id: '',
+    horarios: []
+  });
+
+  // Estados para el selector temporal de horarios
+  const [tempDia, setTempDia] = useState('LUNES');
+  const [tempHora, setTempHora] = useState('06:00');
+
+  // Cargar lista de entrenadores al montar el componente
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        const data = await getEntrenadores();
+        setEntrenadores(data);
+      } catch (error) {
+        console.error("Error al cargar entrenadores:", error);
+      }
+    };
+    cargarDatos();
+  }, []);
+
+  // Generar bloques de horas (06:00 a 22:00)
+  const bloquesHora = Array.from({ length: 17 }, (_, i) => {
+    const hora = i + 6;
+    return `${hora < 10 ? '0' + hora : hora}:00`;
+  });
+
+  const diasSemana = ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO", "DOMINGO"];
+
+  // Manejador de cambios unificado
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    
+    // Validaciones para campos numéricos (Rango 0 - 100)
+    if (name === 'costo' || name === 'edadMin') {
+      const numValue = Number(value);
+      if (numValue < 0) return;
+      if (numValue > 100) return;
+      setFormData(prev => ({ ...prev, [name]: numValue }));
+      return;
+    }
+
+    // Nombre en mayúsculas y asignación general
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: name === 'nombre' ? value.toUpperCase() : value 
+    }));
+  };
+
+  // Agregar horario a la lista
+  const addHorario = () => {
+    const existe = formData.horarios.find(h => h.dia === tempDia && h.hora === tempHora);
+    if (existe) {
+      alert("Este horario ya ha sido agregado a la lista.");
+      return;
+    }
+    
+    setFormData(prev => ({
+      ...prev,
+      horarios: [...prev.horarios, { dia: tempDia, hora: tempHora }]
+    }));
+  };
+
+  // Quitar horario de la lista
+  const removeHorario = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      horarios: prev.horarios.filter((_, i) => i !== index)
+    }));
+  };
+
+  // Envío del formulario
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+// 1. Acumulador de errores
+    const errores: string[] = [];
+
+    // 2. Validaciones de negocio
+    if (!formData.entrenador_id) {
+      errores.push("Debe seleccionar un entrenador responsable.");
+    }
+    if(!formData.nombre.trim()) {
+      errores.push("El nombre de la clase no puede estar vacío.");
+    }
+    
+    if (formData.horarios.length === 0) {
+      errores.push("Debe añadir al menos un horario para la clase.");
+    }
+
+    if (formData.costo <= 0) {
+      errores.push("El costo mensual debe ser mayor a 0.");
+    }
+
+    if (formData.edadMin < 0) {
+      errores.push("La edad mínima no puede ser negativa.");
+    }
+
+    // 3. Si hay errores, los mostramos todos juntos y frenamos la ejecución
+    if (errores.length > 0) {
+      const mensajeFinal = "⚠️ Faltan datos obligatorios para continuar:\n\n- " + errores.join("\n- ");
+      alert(mensajeFinal);
+      return; 
+    }
+
+    setLoading(true);
+    try {
+      await createClaseConHorarios(formData);
+      alert("✅ Clase y horarios guardados exitosamente.");
+      navigate('/clases');
+    } catch (error) {
+      console.error("Error en la transacción:", error);
+      alert("❌ Ocurrió un error al guardar. Intente nuevamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto bg-white rounded-2xl border border-gray-200 p-6 shadow-sm transition-all">
+      {/* Encabezado */}
+      <h3 className="font-bold text-xs text-gray-400 uppercase mb-5 flex items-center gap-2 border-b border-gray-100 pb-2">
+        <span className="text-blue-600 bg-blue-50 p-1 rounded-md">
+          <MdOutlineClass size={18} />
+        </span>
+        Configuración de Nueva Clase / Entrenamiento
+      </h3>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        
+        {/* FILA 1: Nombre y Entrenador */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <InputGroup
+            label="Nombre de la Clase"
+            name="nombre"
+            value={formData.nombre}
+            onChange={handleChange}
+            placeholder="Ej: NATACIÓN NIVEL 1"
+            required
+          />
+
+          <div>
+            <label className="text-xs font-bold text-gray-500 ml-1 mb-1 flex items-center gap-1">
+              <FaChalkboardTeacher className="text-blue-400"/> Entrenador Responsable <span className="text-red-500">*</span>
+            </label>
+            <select 
+              name="entrenador_id"
+              value={formData.entrenador_id}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:border-blue-500 outline-none bg-white transition-all cursor-pointer"
+              required
+            >
+              <option value="">Seleccione un entrenador...</option>
+              {entrenadores.map(ent => (
+                <option key={ent.id} value={ent.id}>
+                  {ent.apellido} {ent.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* FILA 2: Costo y Edad Mínima */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-bold text-gray-500 ml-1 block mb-1">Costo Mensual ($)</label>
+            <input
+              type="number"
+              name="costo"
+              value={formData.costo}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:border-blue-500 outline-none transition-all font-mono"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-gray-500 ml-1 mb-1 flex items-center gap-1">
+              <FaUserGraduate className="text-[10px]"/> Edad Mínima
+            </label>
+            <input
+              type="number"
+              name="edadMin"
+              value={formData.edadMin}
+              onChange={handleChange}
+              className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:border-blue-500 outline-none transition-all font-mono"
+            />
+          </div>
+        </div>
+
+        <hr className="border-gray-100" />
+
+        {/* SECCIÓN: Gestión de Horarios */}
+        <div className="space-y-4">
+          <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">
+            Planificación de Horarios
+          </label>
+          
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex flex-wrap items-end gap-3 shadow-inner">
+            <div className="flex-1 min-w-[140px]">
+              <label className="text-[10px] font-bold text-slate-400 mb-1 block">DÍA DE SEMANA</label>
+              <select 
+                value={tempDia} 
+                onChange={(e) => setTempDia(e.target.value)}
+                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {diasSemana.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </div>
+
+            <div className="flex-1 min-w-[140px]">
+              <label className="text-[10px] font-bold text-slate-400 mb-1 block">HORA DE INICIO</label>
+              <select 
+                value={tempHora} 
+                onChange={(e) => setTempHora(e.target.value)}
+                className="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {bloquesHora.map(h => <option key={h} value={h}>{h}</option>)}
+              </select>
+            </div>
+
+            <button
+              type="button"
+              onClick={addHorario}
+              className="bg-blue-600 text-white p-2.5 rounded-lg hover:bg-blue-700 transition-all flex items-center gap-2 text-xs font-bold shadow-md active:scale-95"
+            >
+              <MdAddCircle size={18} /> AÑADIR BLOQUE
+            </button>
+          </div>
+
+          {/* Listado de bloques agregados */}
+          <div className="flex flex-wrap gap-2 pt-2">
+            {formData.horarios.length === 0 && (
+              <p className="text-xs text-slate-400 italic">No se han definido horarios para esta clase...</p>
+            )}
+            {formData.horarios.map((h, index) => (
+              <div 
+                key={index} 
+                className="flex items-center gap-2 bg-white border border-blue-200 pl-3 pr-1 py-1.5 rounded-full text-[11px] font-bold text-blue-700 shadow-sm animate-in fade-in zoom-in duration-200"
+              >
+                <FaCalendarDay className="text-blue-300" /> {h.dia}
+                <FaClock className="text-blue-300 ml-1" /> {h.hora}
+                <button 
+                  type="button"
+                  onClick={() => removeHorario(index)}
+                  className="p-1 hover:bg-red-50 hover:text-red-500 rounded-full transition-colors ml-1"
+                >
+                  <MdDeleteOutline size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Botón Guardar - Estilo Negro */}
+        <button
+          type="submit"
+          disabled={loading}
+          className={`cursor-pointer w-full py-3.5 rounded-xl font-bold text-xs shadow-lg mt-6 transition-all uppercase tracking-widest flex justify-center items-center gap-2
+            ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-900 text-white hover:bg-black hover:shadow-xl active:scale-[0.98]'}
+          `}
+        >
+          {loading ? (
+            <span className="flex items-center gap-2">Procesando...</span>
+          ) : (
+            <>
+              <MdSave size={16} className="text-gray-400"/>
+              Registrar Clase en el Sistema
+            </>
+          )}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default ClasesForm;
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\components\EntrenadoresForm.tsx
+==================================================
+
+import React, { useState } from 'react';
+import { InputGroup } from '@/components/InputGroup'; 
+import { MdPersonAdd, MdSave } from "react-icons/md";
+import type { ProfessorData } from '@/pages/entrenadores/types';
+import { createEntrenador } from '@/pages/entrenadores/services/crearEntrenador';
+import { useNavigate } from 'react-router-dom';
+import { CreateEntrenadorError } from '@/pages/entrenadores/types/error';
+import { FaPhoneAlt } from 'react-icons/fa';
+
+const EntrenadoresForm: React.FC = () => {
+
+  const navigate = useNavigate();
+
+  const [formData, setFormData] = useState<ProfessorData>({
+    nombre: '',
+    apellido: '',
+    cedulaType: 'V', 
+    cedula: '',
+    phoneCode: '0414',
+    telefono: '',
+    direccion: ''
+  });
+  
+  const [loading, setLoading] = useState(false);
+
+  // 1. Manejador de cambios
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    
+    // Convertimos a mayúsculas solo si es texto o email
+    const finalValue = (type === 'text' || type === 'email') 
+      ? value.toUpperCase() 
+      : value;
+
+    setFormData((prev) => ({ ...prev, [name]: finalValue }));
+  };
+
+  const validate = (): boolean => {
+    const errors: string[] = []; 
+
+    if (!formData.nombre.trim()) errors.push("El campo NOMBRE es obligatorio.");
+    if (!formData.apellido.trim()) errors.push("El campo APELLIDO es obligatorio.");
+    if (!formData.cedula.trim()) errors.push("Debes ingresar el número de CÉDULA.");
+    
+    if (!formData.telefono.trim()) {
+      errors.push("Debes ingresar el número de TELÉFONO.");
+    } else if (formData.telefono.length < 7) {
+      errors.push("El teléfono parece incompleto (muy corto).");
+    }
+
+    if (errors.length > 0) {
+      alert("⚠️ Faltan datos obligatorios para continuar:\n\n- " + errors.join("\n- "));
+      return false; 
+    }
+
+    return true; 
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validate()) return;
+
+    setLoading(true); 
+
+    try {
+      await createEntrenador(formData);
+      
+      alert("✅ Entrenador guardado exitosamente");
+      
+      setFormData({
+        nombre: '', apellido: '', cedulaType: 'V', cedula: '', 
+        phoneCode: '0414', telefono: '', direccion: ''
+      });
+
+      navigate('/entrenadores');
+
+    } catch (error) {
+        if (error instanceof CreateEntrenadorError) {
+          alert(`❌ ${error.message}`);
+        } else {
+           alert("❌ Ocurrió un error inesperado al guardar el entrenador.");
+        }
+    } finally {
+      setLoading(false); 
+    }
+  };
+
+  // --- ESTILOS COMPARTIDOS ---
+  // Estos estilos aseguran que la Cédula y el Teléfono se vean idénticos
+  const selectPrefixClass = "bg-gray-100 border border-gray-300 border-r-0 rounded-l-lg text-sm px-2 py-2.5 outline-none focus:bg-white focus:border-blue-500 transition-colors cursor-pointer text-center font-bold text-gray-700";
+  const inputSuffixClass = "w-full border border-gray-300 rounded-r-lg p-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-0 uppercase placeholder-gray-300 transition-all font-mono";
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-6 h-fit transition-all shadow-sm">
+      <h3 className="font-bold text-xs text-gray-400 uppercase mb-5 flex items-center gap-2 border-b border-gray-100 pb-2">
+        <span className="text-gray-600 bg-gray-100 p-1 rounded-md">
+           <MdPersonAdd size={18} />
+        </span>
+        Nuevo Entrenador
+      </h3>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        
+        {/* FILA 1: Nombre y Apellido */}
+        <div className="grid grid-cols-2 gap-4">
+          <InputGroup
+            label="Nombre"
+            name="nombre"
+            value={formData.nombre}
+            onChange={handleChange}
+            placeholder="Ej: JUAN"
+            required
+          />
+          <InputGroup
+            label="Apellido"
+            name="apellido"
+            value={formData.apellido}
+            onChange={handleChange}
+            placeholder="Ej: PÉREZ"
+            required
+          />
+        </div>
+
+        {/* FILA 2: Cédula y Teléfono */}
+        <div className="grid grid-cols-2 gap-4">
+          
+          {/* CAMPO CÉDULA */}
+          <div>
+            <label className="text-xs font-bold text-gray-500 ml-1 block mb-1">
+             Cédula <span className="text-red-500">*</span>
+            </label>
+            <div className="flex w-full shadow-sm">
+              <select
+                name="cedulaType"
+                value={formData.cedulaType}
+                onChange={handleChange}
+                className={`${selectPrefixClass} w-16`}
+              >
+                <option value="V">V</option>
+                <option value="E">E</option>
+              </select>
+              <input
+                type="tel"
+                maxLength={12}
+                name="cedula"
+                value={formData.cedula}
+                onChange={handleChange}
+                className={inputSuffixClass}
+                placeholder="12345678"
+              />
+            </div>
+          </div>
+
+          {/* CAMPO TELÉFONO (Diseño igualado) */}
+          <div>
+           <label className="text-xs font-bold text-gray-500 ml-1 mb-1 flex items-center gap-1">
+             <FaPhoneAlt className="text-gray-400 text-[10px]" /> Teléfono <span className="text-red-500">*</span>
+           </label>
+           <div className="flex w-full shadow-sm">
+               {/* Select: Código de área */}
+               <select
+                   name="phoneCode"
+                   value={formData.phoneCode}
+                   onChange={handleChange}
+                   className={`${selectPrefixClass} w-20`} // Ajustado a w-20 para que quepan 4 dígitos bien
+               >
+                   <option value="0412">0412</option>
+                   <option value="0414">0414</option>
+                   <option value="0424">0424</option>
+                   <option value="0416">0416</option>
+                   <option value="0426">0426</option>
+               </select>
+
+               {/* Input: Número restante */}
+               <input
+                   type="tel"
+                   name="telefono"
+                   value={formData.telefono}
+                   onChange={handleChange}
+                   maxLength={7}
+                   placeholder="1234567"
+                   className={inputSuffixClass}
+               />
+           </div>
+          </div>
+        </div>
+
+        {/* FILA 3: Dirección */}
+        <InputGroup
+          label="Dirección"
+          name="direccion"
+          value={formData.direccion}
+          onChange={handleChange}
+          placeholder="Av. Bolívar, Casa Nro..."
+        />
+
+        {/* Botón Guardar */}
+          <button
+            type="submit"
+            disabled={loading}
+            className={`cursor-pointer w-full py-3.5 rounded-xl font-bold text-xs shadow-lg mt-4 transition-all uppercase tracking-widest flex justify-center items-center gap-2
+              ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-900 text-white hover:bg-black hover:shadow-lg active:scale-95'}
+            `}
+          >
+            {loading ? (
+              <span>Guardando...</span>
+            ) : (
+              <>
+                <MdSave size={16} className="text-gray-400"/>
+                Guardar Profesor
+              </>
+            )}
+          </button>
+      </form>
+    </div>
+  );
+};
+
+export default EntrenadoresForm;
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\components\EntrenadorPerfil.tsx
+==================================================
+
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import type { Entrenador, Clase } from '@/pages/entrenadores/types';
+import { 
+  EntrenadorError, 
+  UpdateEntrenadorError 
+} from '@/pages/entrenadores/types/error';
+
+// Iconos
+import { 
+  FaUserTie, FaSave, FaPen, FaArrowLeft, FaSwimmingPool, 
+  FaPhoneAlt, FaIdCard, FaMapMarkerAlt, FaCheckCircle, 
+  FaTimesCircle, FaSpinner, FaUndo, FaEye 
+} from 'react-icons/fa';
+
+import { getEntrenadorById } from '@/pages/entrenadores/services/gerEntrenadorById';
+import { getClasesByEntrenador } from '@/pages/entrenadores/services/getClasesByEntrenador';
+import { updateEntrenador } from '@/pages/entrenadores/services/updateEntrenador';
+
+// Definimos un tipo extendido para manejar los campos temporales del formulario
+interface FormData extends Partial<Entrenador> {
+  phoneCode?: string;
+  simplePhone?: string;
+}
+
+const EntrenadorPerfil: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  // Estados de Datos
+  const [entrenador, setEntrenador] = useState<Entrenador | null>(null);
+  const [clases, setClases] = useState<Clase[]>([]);
+  
+  // Estados de UI
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+
+  // Estado del Formulario usando el tipo extendido
+  const [formData, setFormData] = useState<FormData>({});
+
+  useEffect(() => {
+    if (!id) return;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const [entrenadorData, clasesData] = await Promise.all([
+          getEntrenadorById(id),
+          getClasesByEntrenador(id)
+        ]);
+        
+        setEntrenador(entrenadorData);
+        setClases(clasesData);
+
+        let code = "0414"; // Default
+        let num = "";
+
+        if (entrenadorData.telefono) {
+          if (entrenadorData.telefono.includes('-')) {
+            const parts = entrenadorData.telefono.split('-');
+            code = parts[0];
+            num = parts[1];
+          } else {
+            // Fallback por si viene sin guion
+            code = entrenadorData.telefono.substring(0, 4);
+            num = entrenadorData.telefono.substring(4);
+          }
+        }
+
+        setFormData({
+          ...entrenadorData,
+          phoneCode: code,
+          simplePhone: num
+        });
+
+      } catch (err) {
+        if (err instanceof EntrenadorError) {
+          setError(err.message);
+        } else {
+          setError("Error inesperado al cargar el perfil.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [id]);
+
+  // Manejador de cambios genérico con MAYÚSCULAS forzadas
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    
+    let finalValue = value;
+
+    // Si es nombre o apellido, convertir a mayúsculas
+    if (name === 'nombre' || name === 'apellido') {
+        finalValue = value.toUpperCase();
+    }
+
+    setFormData(prev => ({ ...prev, [name]: finalValue }));
+  };
+
+  // Manejador ESPECÍFICO para el teléfono (solo números)
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const { value } = e.target;
+      // Reemplazamos todo lo que NO sea número por vacío
+      const onlyNums = value.replace(/[^0-9]/g, '');
+      
+      setFormData(prev => ({ ...prev, simplePhone: onlyNums }));
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id || !formData) return;
+    
+    try {
+      setSaving(true);
+      setError(null);
+
+      // Combinar código y número antes de guardar
+      const finalPhone = `${formData.phoneCode}-${formData.simplePhone}`;
+      
+      // Creamos el objeto limpio para enviar
+      const payload = {
+        ...formData,
+        telefono: finalPhone
+      };
+      
+      delete payload.phoneCode;
+      delete payload.simplePhone;
+
+      const updatedEntrenador = await updateEntrenador(id, payload);
+      
+      setEntrenador(updatedEntrenador);
+      setSuccessMsg("¡Perfil actualizado correctamente!");
+      setIsEditing(false);
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err) {
+      if (err instanceof UpdateEntrenadorError) {
+        setError(err.message);
+      } else {
+        setError("No se pudieron guardar los cambios.");
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (entrenador) {
+        const parts = (entrenador.telefono || "").split('-');
+        setFormData({
+            ...entrenador,
+            phoneCode: parts[0] || "0414",
+            simplePhone: parts[1] || ""
+        });
+    }
+    setIsEditing(false);
+    setError(null);
+  };
+
+  if (loading) return (
+    <div className="flex flex-col items-center justify-center h-64 text-blue-600">
+      <FaSpinner className="animate-spin text-4xl mb-4" />
+      <p>Cargando perfil...</p>
+    </div>
+  );
+
+  if (error && !entrenador) return <div className="p-8 text-center text-red-600">{error}</div>;
+  if (!entrenador) return null;
+
+  const hasClases = clases.length > 0;
+
+  // Clases de estilo para reutilizar
+  const inputBaseClass = `p-3 border transition-all outline-none ${
+     isEditing 
+       ? 'border-blue-300 focus:ring-2 focus:ring-blue-500/20 bg-white' 
+       : 'border-transparent bg-slate-50 text-slate-700 font-medium'
+  }`;
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-6xl animate-fade-in">
+      
+      {/* Botón Volver */}
+      <button 
+        onClick={() => navigate(-1)} 
+        className="mb-6 flex items-center text-slate-500 hover:text-blue-600 transition-colors font-medium"
+      >
+        <FaArrowLeft className="mr-2" /> Volver al listado
+      </button>
+
+      {/* Encabezado Principal */}
+      <div className="bg-gradient-to-r from-blue-700 to-blue-500 rounded-t-2xl p-8 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-6">
+          <div className="bg-white/20 p-4 rounded-full backdrop-blur-md border-2 border-white/30 shadow-inner">
+            <FaUserTie className="text-5xl text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">{entrenador.nombre} {entrenador.apellido}</h1>
+            <p className="text-blue-100 opacity-90 flex items-center gap-2 mt-1 font-mono bg-blue-800/30 px-2 py-0.5 rounded w-fit">
+              <FaIdCard /> {entrenador.cedula}
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex gap-2">
+          {isEditing ? (
+             <button type="button" onClick={handleCancel} className="px-4 py-2 rounded-lg font-semibold flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white transition-all backdrop-blur-sm">
+               <FaUndo /> Cancelar
+             </button>
+          ) : (
+            <button type="button" onClick={() => setIsEditing(true)} className="px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 bg-white text-blue-700 hover:bg-blue-50 shadow-md transition-all">
+              <FaPen className="text-sm" /> Editar Perfil
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className={`grid grid-cols-1 ${hasClases ? 'lg:grid-cols-3' : ''} gap-8 mt-6`}>
+        
+        {/* COLUMNA IZQUIERDA: Formulario */}
+        <div className={`${hasClases ? 'lg:col-span-2' : 'w-full'} bg-white rounded-2xl shadow-sm border border-slate-100 p-6 relative`}>
+          
+          {error && <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm border border-red-100">{error}</div>}
+          {successMsg && <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-lg text-sm border border-green-100 flex items-center gap-2"><FaCheckCircle /> {successMsg}</div>}
+
+          <div className="flex items-center justify-between mb-6 border-b border-slate-100 pb-4">
+            <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+              Información Personal
+            </h2>
+            {isEditing && <span className="text-xs text-blue-500 font-semibold uppercase tracking-wider animate-pulse">Modo Edición</span>}
+          </div>
+
+          <form onSubmit={handleSave} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Nombre */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Nombre</label>
+                <input
+                  type="text"
+                  name="nombre"
+                  disabled={!isEditing}
+                  value={formData.nombre || ''}
+                  onChange={handleInputChange} // Usa el manejador de mayúsculas
+                  className={`w-full rounded-lg ${inputBaseClass}`}
+                />
+              </div>
+
+              {/* Apellido */}
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Apellido</label>
+                <input
+                  type="text"
+                  name="apellido"
+                  disabled={!isEditing}
+                  value={formData.apellido || ''}
+                  onChange={handleInputChange} // Usa el manejador de mayúsculas
+                  className={`w-full rounded-lg ${inputBaseClass}`}
+                />
+              </div>
+
+              {/* Campo Teléfono Dividido */}
+              <div className="relative">
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Teléfono</label>
+                <div className="relative flex w-full shadow-sm rounded-lg">
+                    <div className="absolute top-3.5 left-3 text-slate-400 z-10 pointer-events-none">
+                       <FaPhoneAlt />
+                    </div>
+                    
+                    <select
+                        name="phoneCode"
+                        disabled={!isEditing}
+                        value={formData.phoneCode || '0412'}
+                        onChange={handleInputChange}
+                        className={`w-28 pl-9 pr-2 rounded-l-lg border-r-0 cursor-pointer appearance-none ${inputBaseClass}`}
+                    >
+                        <option value="0412">0412</option>
+                        <option value="0414">0414</option>
+                        <option value="0424">0424</option>
+                        <option value="0416">0416</option>
+                        <option value="0426">0426</option>
+                    </select>
+
+                    <input
+                        type="tel"
+                        name="simplePhone"
+                        maxLength={7}
+                        disabled={!isEditing}
+                        value={formData.simplePhone || ''}
+                        onChange={handlePhoneChange} // <--- USA EL MANEJADOR ESPECÍFICO
+                        placeholder="1234567"
+                        className={`w-full rounded-r-lg font-mono ${inputBaseClass}`}
+                    />
+                </div>
+              </div>
+
+              {/* Cédula */}
+              <div className="relative">
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Cédula</label>
+                <div className="relative">
+                  <FaIdCard className="absolute top-3.5 left-3 text-slate-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    name="cedula"
+                    disabled={true} 
+                    value={formData.cedula || ''}
+                    className="w-full p-3 pl-10 rounded-lg border border-transparent bg-slate-100 text-slate-400 cursor-not-allowed font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Dirección */}
+              <div className="md:col-span-2 relative">
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Dirección</label>
+                <div className="relative">
+                  <FaMapMarkerAlt className="absolute top-3.5 left-3 text-slate-400 pointer-events-none" />
+                  <textarea
+                    name="direccion"
+                    rows={3}
+                    disabled={!isEditing}
+                    value={formData.direccion || ''}
+                    onChange={handleInputChange}
+                    className={`w-full pl-10 resize-none leading-relaxed rounded-lg ${inputBaseClass}`}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {isEditing && (
+              <div className="flex justify-end pt-6 mt-4 border-t border-slate-100">
+                <button 
+                  type="submit"
+                  disabled={saving}
+                  className="bg-blue-600 cursor-pointer hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold shadow-lg shadow-blue-200 flex items-center gap-2 transition-all disabled:opacity-50"
+                >
+                  {saving ? <FaSpinner className="animate-spin" /> : <FaSave />}
+                  {saving ? "Guardando..." : "Guardar Cambios"}
+                </button>
+              </div>
+            )}
+          </form>
+        </div>
+
+        {/* COLUMNA DERECHA: Clases */}
+        {hasClases && (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 h-fit sticky top-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <FaSwimmingPool className="text-blue-500" /> Clases Asignadas
+              </h2>
+              <span className="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1 rounded-full border border-blue-100">
+                {clases.length}
+              </span>
+            </div>
+
+            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+              {clases.map((clase) => (
+                <div 
+                  key={clase.id} 
+                  className={`p-4 rounded-xl border transition-all duration-200 group hover:shadow-md ${
+                    clase.activo 
+                      ? 'border-blue-100 bg-gradient-to-br from-white to-blue-50' 
+                      : 'border-slate-100 bg-slate-50 opacity-60 grayscale-[0.5]'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-bold text-slate-700 group-hover:text-blue-700 transition-colors">
+                      {clase.nombre}
+                    </h3>
+                    {clase.activo ? (
+                      <FaCheckCircle className="text-green-500 text-lg" title="Activo" />
+                    ) : (
+                      <FaTimesCircle className="text-slate-400 text-lg" title="Inactivo" />
+                    )}
+                  </div>
+                  
+                  <div className="flex justify-between items-end border-t border-slate-200/50 pt-3 mt-2">
+                    <div>
+                      <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Costo</p>
+                      <p className="text-lg font-mono font-bold text-slate-600">${clase.costo}</p>
+                    </div>
+
+                    {/* BOTÓN VER CLASE */}
+                    <button 
+                      onClick={() => navigate(`/clases/${clase.id}`)}
+                      className="flex items-center gap-2 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition-colors border border-blue-100 hover:border-blue-200"
+                    >
+                      <FaEye className="text-sm" /> Ver Clase
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+};
+
+export default EntrenadorPerfil;
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\components\ListClases.tsx
+==================================================
+
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { GetClasesError } from '@/pages/entrenadores/types/error';
+
+import { 
+  FaSwimmingPool, 
+  FaUserTie, 
+  FaMoneyBillWave, 
+  FaChild, 
+  FaSpinner, 
+  FaEdit,
+  FaArrowRight
+} from 'react-icons/fa';
+import type { ClaseWithExpand } from '@/pages/entrenadores/types';
+import { getClases } from '@/pages/entrenadores/services/getClases';
+
+const ListClases: React.FC = () => {
+  const navigate = useNavigate();
+  const [clases, setClases] = useState<ClaseWithExpand[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getClases();
+        setClases(data);
+      } catch (err) {
+        if (err instanceof GetClasesError) {
+          setError(err.message);
+        } else {
+          setError('Ocurrió un error inesperado al cargar las clases.');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // --- Renderizado de Carga ---
+  if (loading) {
+    return (
+      <div className="flex flex-col justify-center items-center h-64 text-blue-600">
+        <FaSpinner className="animate-spin text-5xl mb-4" />
+        <p className="font-medium animate-pulse">Cargando clases...</p>
+      </div>
+    );
+  }
+
+  // --- Renderizado de Error ---
+  if (error) {
+    return (
+      <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 m-4 rounded shadow-sm" role="alert">
+        <p className="font-bold flex items-center gap-2">Error</p>
+        <p>{error}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      {/* Encabezado */}
+      <div className="mb-8 border-b-2 border-blue-100 pb-4 flex justify-between items-end">
+        <div>
+          <h2 className="text-3xl font-bold text-slate-800">
+            <span className="text-blue-600">Clases</span> Disponibles
+          </h2>
+          <p className="text-slate-500 mt-1">Gestión de oferta académica y horarios.</p>
+        </div>
+        {/* Aquí podrías poner un botón de "Crear Nueva Clase" si lo necesitas */}
+      </div>
+
+      {/* Grid de Tarjetas */}
+      {clases.length === 0 ? (
+        <div className="text-center py-12 bg-blue-50 rounded-lg border border-blue-100 dashed">
+          <FaSwimmingPool className="text-blue-300 text-6xl mx-auto mb-4" />
+          <p className="text-blue-400 font-medium">No hay clases registradas en el sistema.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {clases.map((clase) => (
+            <div 
+              key={clase.id} 
+              className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 overflow-hidden group flex flex-col"
+            >
+              {/* Header de la Tarjeta */}
+              <div className="bg-slate-50 p-4 border-b border-slate-100 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
+                    <FaSwimmingPool className="text-xl" />
+                  </div>
+                  <h3 className="font-bold text-slate-700 text-lg leading-tight line-clamp-1">
+                    {clase.nombre}
+                  </h3>
+                </div>
+              </div>
+
+              {/* Cuerpo de Datos */}
+              <div className="p-5 space-y-4 flex-grow">
+                
+                {/* Entrenador (Usando expand) */}
+                <div className="flex items-start gap-3">
+                  <FaUserTie className="text-slate-400 mt-1 shrink-0" />
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Entrenador</p>
+                    <p className="text-slate-700 font-medium">
+                      {clase.expand?.entrenador_id 
+                        ? `${clase.expand.entrenador_id.nombre} ${clase.expand.entrenador_id.apellido}`
+                        : <span className="text-slate-400 italic">No asignado</span>
+                      }
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  {/* Costo */}
+                  <div className="bg-emerald-50 p-2 rounded border border-emerald-100">
+                    <div className="flex items-center gap-2 mb-1">
+                      <FaMoneyBillWave className="text-emerald-500" />
+                      <span className="text-[10px] text-emerald-600 uppercase font-bold">Costo</span>
+                    </div>
+                    <p className="text-emerald-700 font-bold font-mono text-lg">
+                      ${clase.costo}
+                    </p>
+                  </div>
+
+                  {/* Edad Mínima */}
+                  <div className="bg-blue-50 p-2 rounded border border-blue-100">
+                     <div className="flex items-center gap-2 mb-1">
+                      <FaChild className="text-blue-500" />
+                      <span className="text-[10px] text-blue-600 uppercase font-bold">Edad Min.</span>
+                    </div>
+                    <p className="text-blue-700 font-bold text-lg">
+                      {clase.edadMin}+ <span className="text-xs font-normal">años</span>
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+              
+              {/* Footer / Botón de Acción */}
+              <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center group-hover:bg-blue-50/30 transition-colors">
+                <span className="text-xs text-slate-400 font-mono">ID: {clase.id.substring(0, 8)}...</span>
+                
+                <button 
+                  className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors group/btn"
+                  onClick={() => navigate(`/entrenadores/clases/${clase.id}`)} 
+                >
+                  <FaEdit className="text-xs" />
+                  Gestionar
+                  <FaArrowRight className="text-xs group-hover/btn:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ListClases;
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\components\ListEntrenadores.tsx
+==================================================
+
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+// Servicios
+import { getEntrenadores } from '@/pages/entrenadores/services/getEntrenadores';
+import { checkActiveClasses } from '@/pages/entrenadores/services/checkActiveClass'; // Asegúrate que el nombre del archivo coincida
+import { updateEntrenadorStatus } from '@/pages/entrenadores/services/updateEntrenadorStatus'; // Asegúrate que el nombre del archivo coincida
+
+// Tipos y Errores
+import type { Entrenador } from '@/pages/entrenadores/types';
+import {  GetEntrenadorError, UpdateEntrenadorStatusError } from '@/pages/entrenadores/types/error';
+
+// Iconos
+import { 
+  FaUserTie, FaIdCard, FaPhoneAlt, 
+  FaSpinner, FaArrowRight, FaFilter, FaPowerOff, FaCheckCircle, FaTimesCircle 
+} from 'react-icons/fa';
+
+const ListEntrenadores: React.FC = () => {
+  const navigate = useNavigate();
+  
+  // Estados de Datos
+  const [entrenadores, setEntrenadores] = useState<Entrenador[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Estados de UI
+  const [showInactive, setShowInactive] = useState<boolean>(false); 
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null); // Limpiamos errores previos al recargar
+      const data = await getEntrenadores(); 
+      setEntrenadores(data);
+    } catch (err) {
+      if (err instanceof GetEntrenadorError) {
+        setError(err.message);
+      } else {
+        setError('Ocurrió un error inesperado al cargar los entrenadores.');
+      } 
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // --- LÓGICA DE PROTECCIÓN Y ACTUALIZACIÓN ---
+  const handleToggleStatus = async (entrenador: Entrenador) => {
+    
+    // CASO 1: Queremos DESACTIVAR (El entrenador está actualmente activo)
+    if (entrenador.activo) {
+        setUpdatingId(entrenador.id); // Spinner de carga local en el botón
+        
+        try {
+          // Verificamos si tiene clases activas
+          const tieneClases = await checkActiveClasses(entrenador.id);
+          
+          if (tieneClases) {
+              setUpdatingId(null);
+              // ALERTA DE BLOQUEO
+              alert("⛔ NO SE PUEDE DESACTIVAR\n\nEste entrenador tiene clases activas asignadas. No puede desactivarlo hasta que elimine sus clases o se las asigne a otro profesor.");
+              return; // Aquí muere la función
+          }
+        } catch (checkErr) {
+           console.error("Error al verificar clases:", checkErr);
+           alert("Error al verificar las clases del entrenador. Intente nuevamente.");
+           setUpdatingId(null);
+           return;
+        }
+    }
+
+    // CASO 2: Proceder (Ya sea porque es 'Activar' o porque pasó la validación de 'Desactivar')
+    const accion = entrenador.activo ? 'desactivar' : 'activar';
+    
+    // Confirmación final de seguridad
+    if (!window.confirm(`¿Confirmas que deseas ${accion} a ${entrenador.nombre}?`)) {
+      setUpdatingId(null);
+      return;
+    }
+
+    try {
+      setUpdatingId(entrenador.id);
+      const nuevoEstado = !entrenador.activo;
+      
+      await updateEntrenadorStatus(entrenador.id, nuevoEstado);
+
+      // Actualizamos la UI localmente (Optimistic Update)
+      setEntrenadores(prev => prev.map(e => 
+        e.id === entrenador.id ? { ...e, activo: nuevoEstado } : e
+      ));
+
+    } catch (err) {
+      // --- AQUI ESTA EL MANEJO DE ERROR RESTAURADO ---
+      console.error(err);
+      if (err instanceof UpdateEntrenadorStatusError) {
+        alert(`Error: ${err.message}`);
+      } else {
+        alert('Ocurrió un error inesperado al actualizar el estado del entrenador.');
+      }
+      // Opcional: Podríamos recargar los datos para asegurar sincronía con el servidor
+      // fetchData(); 
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const filteredEntrenadores = entrenadores.filter(e => showInactive ? !e.activo : e.activo);
+
+  if (loading) return (
+    <div className="flex flex-col justify-center items-center h-64 text-blue-600">
+      <FaSpinner className="animate-spin text-5xl mb-4" />
+      <p className="font-medium animate-pulse">Cargando equipo...</p>
+    </div>
+  );
+  
+  // Renderizado de Error General (Carga Inicial)
+  if (error) {
+    return (
+      <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 m-4 rounded shadow-sm" role="alert">
+        <p className="font-bold flex items-center gap-2">Error de conexión</p>
+        <p>{error}</p>
+        <button 
+            onClick={fetchData}
+            className="mt-2 text-sm font-semibold underline hover:text-red-900"
+        >
+            Intentar de nuevo
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      {/* Encabezado y Filtros */}
+      <div className="mb-8 flex flex-col md:flex-row justify-between items-end border-b-2 border-blue-100 pb-4 gap-4">
+        <div>
+          <h2 className="text-3xl font-bold text-slate-800">
+            <span className="text-blue-600">Entrenadores</span> La Isabelica
+          </h2>
+          <p className="text-slate-500 mt-1">Gestión del personal técnico.</p>
+        </div>
+
+        {/* Botones de Filtro */}
+        <div className="flex bg-slate-100 p-1 rounded-lg">
+          <button
+            onClick={() => setShowInactive(false)}
+            className={`px-4 py-2 rounded-md text-sm font-semibold flex items-center gap-2 transition-all ${
+              !showInactive ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500'
+            }`}
+          >
+            <FaCheckCircle /> Activos
+          </button>
+          <button
+            onClick={() => setShowInactive(true)}
+            className={`px-4 py-2 rounded-md text-sm font-semibold flex items-center gap-2 transition-all ${
+              showInactive ? 'bg-white text-slate-600 shadow-sm' : 'text-slate-500'
+            }`}
+          >
+            <FaTimesCircle /> Inactivos
+          </button>
+        </div>
+      </div>
+
+      {/* Grid de Tarjetas */}
+      {filteredEntrenadores.length === 0 ? (
+        <div className="text-center py-12 bg-slate-50 rounded-lg border border-slate-200 dashed">
+          <FaFilter className="text-slate-300 text-4xl mx-auto mb-3" />
+          <p className="text-slate-400 font-medium">No hay entrenadores para mostrar.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredEntrenadores.map((entrenador) => (
+            <div 
+              key={entrenador.id} 
+              className={`
+                rounded-xl shadow-sm border overflow-hidden transition-all duration-300
+                ${entrenador.activo 
+                  ? 'bg-white border-slate-100 hover:shadow-xl' 
+                  : 'bg-slate-50 border-slate-200 opacity-90 grayscale-[0.8] hover:grayscale-0'}
+              `}
+            >
+              {/* Header */}
+              <div className={`p-4 flex items-center justify-between ${
+                entrenador.activo ? 'bg-gradient-to-r from-blue-600 to-blue-500' : 'bg-slate-500'
+              }`}>
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/20 p-2 rounded-full text-white backdrop-blur-sm">
+                    <FaUserTie className="text-2xl" />
+                  </div>
+                  <div className="overflow-hidden">
+                    <h3 className="text-white font-bold text-lg leading-tight truncate">
+                      {entrenador.nombre} {entrenador.apellido}
+                    </h3>
+                    <span className="text-white/80 text-xs font-light uppercase tracking-wide block">
+                      {entrenador.activo ? 'Disponible' : 'No Disponible'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Datos */}
+              <div className="p-5 space-y-4">
+                <div className="flex items-start gap-3 p-2 -mx-2">
+                  <FaIdCard className="text-blue-400 text-xl mt-1 shrink-0" />
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Cédula</p>
+                    <p className="text-slate-700 font-semibold">{entrenador.cedula}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-2 -mx-2">
+                  <FaPhoneAlt className="text-blue-400 text-lg mt-1 shrink-0" />
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Teléfono</p>
+                    <p className="text-slate-700 font-medium font-mono">{entrenador.telefono || 'N/A'}</p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Footer Acciones */}
+              <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+                
+                {/* BOTÓN INTELIGENTE */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleToggleStatus(entrenador); }}
+                  disabled={updatingId === entrenador.id}
+                  className={`
+                    flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full border transition-all
+                    ${entrenador.activo 
+                      ? 'text-red-500 border-red-200 hover:bg-red-50' 
+                      : 'text-green-600 border-green-200 hover:bg-green-50'}
+                    disabled:opacity-50 disabled:cursor-not-allowed
+                  `}
+                >
+                  {updatingId === entrenador.id ? <FaSpinner className="animate-spin" /> : <FaPowerOff />}
+                  {entrenador.activo ? 'Desactivar' : 'Activar'}
+                </button>
+
+                <button 
+                  className="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors group/btn"
+                  onClick={() => navigate(`/entrenadores/perfil/${entrenador.id}`)} 
+                >
+                  Ver Perfil <FaArrowRight className="text-xs group-hover/btn:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ListEntrenadores;
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\services\checkActiveClass.ts
+==================================================
+
+import { pb } from '@/lib/pb';
+
+export const checkActiveClasses = async (entrenadorId: string): Promise<boolean> => {
+  try {
+    // Solicitamos solo 1 registro. Si devuelve algo (totalItems > 0), es que TIENE clases.
+    const result = await pb.collection('clases').getList(1, 1, {
+      filter: `entrenador_id="${entrenadorId}" && activo=true`,
+    });
+    
+    return result.totalItems > 0;
+  } catch (error) {
+    console.error("Error verificando clases:", error);
+    return false; 
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\services\crearEntrenador.ts
+==================================================
+
+import { pb } from "@/lib/pb";
+import type { ProfessorData } from "@/pages/entrenadores/types";
+import { CreateEntrenadorError } from "@/pages/entrenadores/types/error";
+
+export const createEntrenador = async (data: ProfessorData) => {
+  
+  // 1. Transformación de datos
+  // Aquí unimos el prefijo con el número para cumplir tu requerimiento
+  const dbRecord = {
+    nombre: data.nombre,
+    apellido: data.apellido,
+    // Formato: V-12345678
+    cedula: `${data.cedulaType}-${data.cedula}`, 
+    // Formato: 0414-1234567
+    telefono: `${data.phoneCode}-${data.telefono}`, 
+    direccion: data.direccion,
+    activo: true, // Por defecto al crear (según tu imagen tienes un campo booleano)
+  };
+
+  try {
+    // 'entrenadores' es el nombre de tu colección en PocketBase (cámbialo si es distinto)
+    const record = await pb.collection('entrenadores').create(dbRecord);
+    return record;
+  } catch (error) {
+    console.error("Error al crear el entrenador:", error);
+    throw new CreateEntrenadorError("Error al crear el entrenador: ");
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\services\createClaseHorario.ts
+==================================================
+
+import { pb } from "@/lib/pb";
+import type { ClaseFormData } from "@/pages/entrenadores/types";
+
+export async function createClaseConHorarios(data: ClaseFormData) {
+  let createdClaseId: string | null = null;
+
+  try {
+    // 1. Creamos la Clase primero para obtener su ID
+    const claseRecord = await pb.collection('clases').create({
+      nombre: data.nombre,
+      costo: data.costo,
+      entrenador_id: data.entrenador_id,
+      edadMin: data.edadMin,
+      activo:true
+    });
+    
+    // Guardamos el ID por si necesitamos borrarlo en el catch
+    createdClaseId = claseRecord.id;
+
+    // 2. Preparamos el batch para las relaciones
+    const batch = pb.createBatch();
+
+    for (const h of data.horarios) {
+      let horarioId = "";
+      
+      try {
+        // Buscamos si el horario existe (esto es un GET, no afecta la DB)
+        const existente = await pb.collection('horarios').getFirstListItem(
+          `dia="${h.dia}" && hora="${h.hora}"`
+        );
+        horarioId = existente.id;
+      } catch {
+        // Si no existe, lo creamos
+        const nuevoHorario = await pb.collection('horarios').create({
+          dia: h.dia,
+          hora: h.hora
+        });
+        horarioId = nuevoHorario.id;
+      }
+
+      // Agregamos la relación clase <-> horario al lote
+      batch.collection('clases_horarios').create({
+        clase_id: createdClaseId,
+        horario_id: horarioId
+      });
+    }
+
+    // 3. Intentamos enviar todas las relaciones juntas
+    await batch.send();
+
+    return claseRecord;
+
+  } catch (error) {
+    // --- LÓGICA DE ROLLBACK ---
+    if (createdClaseId) {
+      console.warn("⚠️ Falló la creación de horarios. Eliminando clase para mantener integridad...");
+      await pb.collection('clases').delete(createdClaseId);
+    }
+    
+    console.error("Error en el proceso de creación:", error);
+    throw new Error("No se pudo crear la clase ni su cronograma. Intente de nuevo.");
+  }
+}
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\services\deleteClases.ts
+==================================================
+
+import { pb } from '@/lib/pb';
+import { DeleteClasesError } from '@/pages/entrenadores/types/error';
+
+export const deleteClase = async (id: string) => {
+  try {
+    // PASO 1: Desactivar las matrículas asociadas (Soft Delete en Cascada)
+    // Buscamos todas las matrículas que pertenezcan a esta clase y estén activas
+    const matriculasActivas = await pb.collection('matriculas').getFullList({
+        filter: `clase_id="${id}" && activo=true`
+    });
+
+    // Preparamos las promesas para actualizar cada matrícula a false
+    const desactivarMatriculasPromises = matriculasActivas.map(m => 
+        pb.collection('matriculas').update(m.id, { activo: false })
+    );
+    
+    // Ejecutamos la actualización de matrículas en paralelo
+    await Promise.all(desactivarMatriculasPromises);
+
+
+    // PASO 2: Desactivar la Clase (Soft Delete Principal)
+    // En lugar de .delete(), usamos .update()
+    await pb.collection('clases').update(id, { 
+        activo: false 
+    });
+    
+    return true;
+
+  } catch (error) {
+    console.error("Error al desactivar la clase:", error);
+    console.error("Error al desactivar las matrículas asociadas:", error);
+    throw new DeleteClasesError("Error al eliminar la clase. Por favor, inténtalo de nuevo.");
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\services\gerEntrenadorById.ts
+==================================================
+
+import { pb } from "@/lib/pb";
+import type { Entrenador } from "@/pages/entrenadores/types";
+import { GetEntrenadorError } from "@/pages/entrenadores/types/error";
+
+
+export const getEntrenadorById = async (id: string): Promise<Entrenador> => {
+  try {
+    const record = await pb.collection('entrenadores').getOne<Entrenador>(id);
+    return record;
+  } catch (error) {
+    console.error(`Error al obtener el entrenador con ID ${id}:`, error);
+    // Lanzamos el error personalizado para que la UI muestre el mensaje correcto
+    throw new GetEntrenadorError("No se pudo cargar la información del entrenador.");
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\services\getClases.ts
+==================================================
+
+
+import { pb } from '@/lib/pb';
+import type { ClaseWithExpand } from '@/pages/entrenadores/types';
+import { GetClasesError } from '@/pages/entrenadores/types/error'; // Tu error personalizado
+
+// Interfaz auxiliar para cuando expandimos la relación con entrenador
+
+
+export const getClases = async (): Promise<ClaseWithExpand[]> => {
+  try {
+    // Solicitamos la lista completa ordenando por creación
+    // 'expand' es clave aquí: le dice a PB que traiga los datos del ID relacionado
+    const records = await pb.collection('clases').getFullList<ClaseWithExpand>({
+      sort: '-created',
+      filter: 'activo=true', // Solo traemos las clases activas
+      expand: 'entrenador_id', 
+    });
+    
+    return records;
+  } catch (err) {
+
+    console.error("Error al obtener las clases:", err);
+    throw new GetClasesError("No se pudo cargar la información de las clases. " );
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\services\getClasesByEntrenador.ts
+==================================================
+
+import { pb } from "@/lib/pb";
+import type { Clase } from "@/pages/entrenadores/types";
+import { GetClasesError } from "@/pages/entrenadores/types/error";
+
+export const getClasesByEntrenador = async (entrenadorId: string): Promise<Clase[]> => {
+  try {
+    const records = await pb.collection('clases').getFullList<Clase>({
+      filter: `entrenador_id = "${entrenadorId}"`,
+      sort: '-created', // Muestra primero las activas
+    });
+    return records;
+  } catch (error) {
+    console.error(`Error al obtener clases del entrenador ${entrenadorId}:`, error);
+    throw new GetClasesError("No se pudieron cargar las clases asignadas.");
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\services\getClasesDetails.ts
+==================================================
+
+import { pb } from '@/lib/pb';
+import type { ClaseFull, ClaseHorario, Matricula } from '@/pages/entrenadores/types';
+import { GetClasesDetailsError } from '@/pages/entrenadores/types/error';
+
+export const getClaseDetails = async (claseId: string) => {
+  try {
+    // 1. Obtener la Clase y su Entrenador
+    const clasePromise = pb.collection('clases').getOne<ClaseFull>(claseId, {
+      expand: 'entrenador_id',
+    });
+
+    // 2. Obtener los Horarios (Tabla intermedia clase_horario)
+    // Filtramos por la clase actual y expandimos el detalle del horario (dia/hora)
+    const horariosPromise = pb.collection('clases_horarios').getFullList<ClaseHorario>({
+      filter: `clase_id="${claseId}"`,
+      expand: 'horario_id',
+      sort: 'created' 
+    });
+
+    // 3. Obtener Alumnos Matriculados
+    // Solo los activos, expandiendo los datos del atleta
+    const matriculasPromise = pb.collection('matriculas').getFullList<Matricula>({
+      filter: `clase_id="${claseId}" && activo=true`,
+      expand: 'atleta_id',
+      sort: '-created'
+    });
+
+    // Ejecutamos todas las promesas en paralelo
+    // Si una falla, el Promise.all lanza el error y cae en el catch
+    const [clase, horarios, matriculas] = await Promise.all([
+      clasePromise,
+      horariosPromise,
+      matriculasPromise
+    ]);
+
+    return { clase, horarios, matriculas };
+
+  } catch (error) {
+    // Console log opcional para depuración en desarrollo
+    console.error("Error al obtener clase:", error);
+
+    
+    // Lanzamos el error personalizado
+    throw new GetClasesDetailsError("Error al obtener los detalles de la clase");
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\services\getEntrenadores.ts
+==================================================
+
+
+import { pb } from '@/lib/pb';
+import type { Entrenador } from '@/pages/entrenadores/types';
+import {  GetEntrenadorError } from '@/pages/entrenadores/types/error';
+
+export const getEntrenadores = async (): Promise<Entrenador[]> => {
+  try {
+    // IMPORTANTE: No pongas "filter: 'activo=true'" aquí.
+    // Necesitamos traer TODOS para que el componente pueda filtrar entre activos e inactivos.
+    const records = await pb.collection('entrenadores').getFullList<Entrenador>({
+      sort: '-created',
+      // Si tenías filter, bórralo o coméntalo:
+      // filter: 'activo=true', <--- ESTO CAUSA EL PROBLEMA
+    });
+    
+    return records;
+  } catch (error) {
+    console.error('Error fetching entrenadores:', error);
+    throw new GetEntrenadorError("Error al obtener entrenadores");
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\services\syncHorarios.ts
+==================================================
+
+import { pb } from '@/lib/pb';
+
+export interface SimpleHorario {
+  dia: string;
+  hora: string;
+}
+
+export const syncHorarios = async (claseId: string, nuevosHorarios: SimpleHorario[]) => {
+  try {
+    // 1. Obtener relaciones existentes para esta clase
+    const relacionesViejas = await pb.collection('clases_horarios').getFullList({
+        filter: `clase_id="${claseId}"`
+    });
+
+    // 2. Borrar todas las relaciones viejas (Limpieza)
+    // Usamos Promise.all para hacerlo en paralelo
+    const deletePromises = relacionesViejas.map(rel => 
+        pb.collection('clases_horarios').delete(rel.id)
+    );
+    await Promise.all(deletePromises);
+
+    // 3. Crear las nuevas relaciones
+    for (const h of nuevosHorarios) {
+        // A. Buscar si el horario maestro (ej: LUNES 08:00) ya existe en la tabla 'horarios'
+        // Esto evita duplicar "LUNES 08:00" mil veces en la tabla maestra
+        let horarioRecord;
+        try {
+            horarioRecord = await pb.collection('horarios').getFirstListItem(
+                `dia="${h.dia}" && hora="${h.hora}"`
+            );
+        } catch ( e) {
+
+            horarioRecord = await pb.collection('horarios').create({ 
+                dia: h.dia, 
+                hora: h.hora 
+            });
+        }
+
+        // C. Crear la relación en la tabla intermedia
+        await pb.collection('clases_horarios').create({
+            clase_id: claseId,
+            horario_id: horarioRecord.id
+        });
+    }
+
+    return true;
+  } catch (error) {
+    console.error("Error sincronizando horarios:", error);
+    throw new Error("Error al actualizar los horarios de la clase");
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\services\UpdateClase.ts
+==================================================
+
+import { pb } from '@/lib/pb';
+import type { ClaseFull } from '@/pages/entrenadores/types';
+import { UpdateClasesError } from '@/pages/entrenadores/types/error';
+
+export const updateClase = async (id: string, data: Partial<ClaseFull>) => {
+  try {
+    // Solo actualizamos los campos nativos de la colección 'clases'
+    const record = await pb.collection('clases').update<ClaseFull>(id, data);
+    return record;
+  } catch (error) {
+    console.error("Error al actualizar la clase:", error);
+    // Usamos el mensaje original de PocketBase si existe, si no, el genérico
+    throw new UpdateClasesError("Error al actualizar la clase: " );
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\services\updateEntrenador.ts
+==================================================
+
+import { pb } from "@/lib/pb";
+import type { Entrenador } from "@/pages/entrenadores/types";
+import { UpdateEntrenadorError } from "@/pages/entrenadores/types/error";
+
+export const updateEntrenador = async (id: string, data: Partial<Entrenador>) => {
+  try {
+    const record = await pb.collection('entrenadores').update<Entrenador>(id, data);
+    return record;
+  } catch (error) {
+    console.error(`Error al actualizar el entrenador con ID ${id}:`, error);
+    throw new UpdateEntrenadorError("Error al guardar los cambios del perfil.");
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\services\updateEntrenadorStatus.ts
+==================================================
+
+import { pb } from '@/lib/pb'; // O tu instancia de pocketbase
+import type { Entrenador } from '@/pages/entrenadores/types';
+import { UpdateEntrenadorStatusError } from '@/pages/entrenadores/types/error';
+
+export const updateEntrenadorStatus = async (id: string, activo: boolean): Promise<Entrenador> => {
+  try {
+    // Actualizamos solo el campo 'activo'
+    const record = await pb.collection('entrenadores').update<Entrenador>(id, {
+      activo: activo
+    });
+    return record;
+  } catch (error) {
+    console.error('Error updating entrenador status:', error);
+    throw new UpdateEntrenadorStatusError('Error al actualizar el estado del entrenador');
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\types\error.ts
+==================================================
+
+
+
+
+
+export class EntrenadorError extends Error {
+
+  constructor(message: string = 'Error al crear entrenador') {
+    super(message);
+    this.name = "createEntrenadorError";
+  }
+}
+
+export class CreateEntrenadorError extends EntrenadorError {}
+export class GetEntrenadorError extends EntrenadorError {}
+export class UpdateEntrenadorError extends EntrenadorError {}
+export class GetClasesError extends EntrenadorError {}
+export class UpdateClasesError extends EntrenadorError {}
+export class GetClasesDetailsError extends EntrenadorError {}
+export class DeleteClasesError extends EntrenadorError {}
+export class UpdateEntrenadorStatusError extends EntrenadorError {}
+
+==================================================
+ARCHIVO: .\src\pages\entrenadores\types\index.ts
+==================================================
+
+import type { RecordModel } from "pocketbase";
+
+export interface ProfessorData {
+  nombre: string;
+  apellido: string;
+  cedulaType: 'V' | 'E'; // Nuevo campo
+  cedula: string;
+  phoneCode: string;
+  telefono: string;
+  direccion: string;
+}
+
+export interface Entrenador extends RecordModel {
+  nombre: string;
+  apellido: string;
+  cedula: string;
+  telefono: string;
+  direccion?: string; // Es opcional (?) según tu diagrama
+}
+
+export interface Clase extends RecordModel {
+  id: string;
+  nombre: string;
+  costo: number;
+  entrenador_id: string;
+  edadMin:number;
+}
+// Interfaces locales
+export interface HorarioInterno {
+  dia: string;
+  hora: string;
+}
+
+export interface ClaseFormData {
+  nombre: string;
+  costo: number;
+  edadMin: number;
+  entrenador_id: string;
+  horarios: HorarioInterno[];
+}
+
+export interface ClaseWithExpand extends Clase {
+  expand?: {
+    entrenador_id?: {
+      nombre: string;
+      apellido: string;
+    }
+  }
+}
+
+// --- Tipos para Alumnos (Atletas) ---
+export interface Atleta extends RecordModel {
+  nombre: string;
+  apellido: string;
+  cedula: string;
+  telefono: string;
+  // ... otros campos
+}
+
+export interface Matricula extends RecordModel {
+  id: string;
+  atleta_id: string;
+  clase_id: string;
+  activo: boolean;
+  expand?: {
+    atleta_id: Atleta;
+  };
+}
+
+// --- Tipos para Horarios ---
+export interface Horario extends RecordModel {
+  dia: string;
+  hora: string;
+}
+
+export interface ClaseHorario extends RecordModel {
+  clase_id: string;
+  horario_id: string;
+  expand?: {
+    horario_id: Horario;
+  };
+}
+
+// --- Tipo extendido de Clase ---
+export interface ClaseFull extends RecordModel {
+  nombre: string;
+  costo: number;
+  edadMin: number;
+  entrenador_id: string;
+  expand?: {
+    entrenador_id: Entrenador;
+  };
+}
+
+==================================================
+ARCHIVO: .\src\pages\inscribir\InscribirPages.tsx
+==================================================
+
+import React, { useState, useEffect } from 'react';
+import { MdSettings, MdArrowForward, MdArrowBack, MdEventNote } from 'react-icons/md';
+import { FaSpinner } from 'react-icons/fa';
+
+// Componentes
+import { PaymentForm } from '@/pages/inscribir/components/PaymentForm';
+import { PersonalDataForm } from '@/pages/inscribir/components/PersonalDataForm';
+import { RepresentativeForm } from '@/pages/inscribir/components/RepresentativeForm';
+import { SummaryCard } from '@/pages/inscribir/components/SummaryCard';
+
+// Tipos
+import type { IClass, IFormData } from '@/pages/inscribir/types';
+import { getClases, saveInscription } from '@/pages/inscribir/services/inscribir';
+
+const InscribirPages: React.FC = () => {
+  // --- Estados ---
+  const [step, setStep] = useState<number>(1);
+  const [age, setAge] = useState<number | null>(null);
+  
+  // Estados de carga
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loadingClasses, setLoadingClasses] = useState<boolean>(false); // Nuevo estado para el select
+  
+  const [availableClasses, setAvailableClasses] = useState<IClass[]>([]);
+
+  const [formData, setFormData] = useState<IFormData>({
+    name: '', surname: '', cedulaType: 'V', cedulaNum: '', dob: '',
+    phoneCode: '0414', phoneNum: '', address: '',
+    repName: '', repSurname: '', repCedulaType: 'V', repCedulaNum: '',
+    repPhoneCode: '0414', repPhoneNum: '',
+    hasMedical: false, medicalDesc: '',
+    classId: '', 
+    // Valores por defecto para pagos
+    currency: 'USD', 
+    paymentMethod: 'zelle', 
+    paymentRef: '', paymentDate: new Date().toISOString().split('T')[0],
+    coverageDate: '', paymentAmount: 0,
+  });
+
+  const isMinor = age !== null && age < 18;
+
+  // --- 1. Calcular Edad (Trigger: cambio en fecha de nacimiento) ---
+  useEffect(() => {
+    if (formData.dob) {
+      const birthDate = new Date(formData.dob);
+      const today = new Date();
+      let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        calculatedAge--;
+      }
+      
+      setAge(calculatedAge);
+
+      // Limpiar teléfono si pasa de mayor a menor (opcional)
+      if (calculatedAge < 18) {
+        setFormData(prev => ({ ...prev, phoneNum: '' }));
+      }
+    } else {
+      setAge(null);
+      setAvailableClasses([]); // Si borra la fecha, limpiamos las clases
+    }
+  }, [formData.dob]);
+
+  // --- 2. Cargar Clases Filtradas (Trigger: cambio en edad) ---
+  useEffect(() => {
+    const fetchClases = async () => {
+      // Solo buscamos si hay una edad válida calculada
+      if (age !== null && age >= 0) {
+        setLoadingClasses(true);
+        // Limpiamos la selección actual para evitar inconsistencias
+        setFormData(prev => ({ ...prev, classId: '' })); 
+        
+        try {
+            // Llamamos al servicio nuevo que recibe la edad
+            const clases = await getClases(age);
+            setAvailableClasses(clases);
+        } catch (error) {
+            console.error(error);
+            setAvailableClasses([]);
+        } finally {
+            setLoadingClasses(false);
+        }
+      } else {
+        setAvailableClasses([]);
+      }
+    };
+
+    fetchClases();
+  }, [age]); // Se ejecuta cada vez que la edad cambia
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    // Manejo seguro de checkbox
+    const checked = (e.target as HTMLInputElement).checked;
+    
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : (name === 'paymentAmount' ? parseFloat(value) || 0 : value)
+    }));
+  };
+
+  // ==========================================
+  // 🚀 VALIDACIÓN DEL PASO 1 (Datos Personales)
+  // ==========================================
+  const handleNextStep = () => {
+    const errors: string[] = [];
+
+    // 1. Validar Datos Básicos
+    if (!formData.name.trim()) errors.push("Nombre del alumno");
+    if (!formData.surname.trim()) errors.push("Apellido del alumno");
+    if (!formData.dob) errors.push("Fecha de nacimiento");
+    if (!formData.address.trim()) errors.push("Dirección");
+
+    // 2. Validar Lógica de Contacto
+    if (isMinor) {
+      if (!formData.repName.trim()) errors.push("Nombre del representante");
+      if (!formData.repSurname.trim()) errors.push("Apellido del representante");
+      if (!formData.repCedulaNum.trim()) errors.push("Cédula del representante");
+      if (!formData.repPhoneNum.trim()) errors.push("Teléfono del representante");
+    } else {
+      if (!formData.phoneNum.trim()) errors.push("Teléfono del alumno");
+      if (!formData.cedulaNum.trim()) errors.push("Cédula del alumno");
+    }
+
+    // 3. Validar Selección de Clase
+    if (!formData.classId) errors.push("Horario de clase");
+
+    if (errors.length > 0) {
+      alert(`⚠️ Faltan datos obligatorios para continuar:\n\n- ${errors.join('\n- ')}`);
+      return;
+    }
+
+    setStep(2);
+  };
+
+  // ==========================================
+  // 🚀 SUBMIT FINAL (Validación de Pagos)
+  // ==========================================
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validación extra de moneda
+    if (formData.currency === 'BS') {
+        if (!formData.paymentAmount || formData.paymentAmount <= 0) {
+            alert("⚠️ Error: El MONTO es obligatorio para pagos en Bolívares.");
+            return;
+        }
+    }
+
+    setIsLoading(true);
+    try {
+      // Usamos el servicio modularizado saveInscription
+      await saveInscription(formData, age);
+      alert("✅ Inscripción exitosa.");
+      window.location.reload();
+    } catch (error) {
+        if (error instanceof Error) {
+          alert(`❌ Error: ${error.message}`)
+        } else {
+          alert("❌ Error desconocido al guardar la inscripción.");
+        }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const selectedClassObj = availableClasses.find(c => c.id === formData.classId);
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6 flex justify-center items-start font-sans">
+      <div className="w-full max-w-5xl">
+        
+        {/* PASO 1 */}
+        {step === 1 && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start animate-fade">
+            <div className="space-y-4">
+              <PersonalDataForm formData={formData} handleChange={handleChange} age={age} isMinor={isMinor} />
+              
+              {isMinor && (
+                 <div className="bg-white p-1 rounded-2xl border border-orange-200 shadow-sm">
+                   <RepresentativeForm formData={formData} handleChange={handleChange} />
+                 </div>
+              )}
+
+              <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input type="checkbox" name="hasMedical" checked={formData.hasMedical} onChange={handleChange} className="w-5 h-5 text-red-500 rounded focus:ring-red-500" />
+                  <span className="text-sm font-bold text-gray-700">¿Posee condición médica?</span>
+                </label>
+                {formData.hasMedical && (
+                  <div className="mt-3 p-4 bg-red-50 rounded-xl border border-red-100 animate-fade">
+                    <textarea name="medicalDesc" value={formData.medicalDesc} onChange={handleChange} className="w-full border border-red-200 bg-white rounded-lg p-2.5 text-sm uppercase focus:outline-none focus:border-red-400" placeholder="Describa la condición..."></textarea>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* SECCIÓN CONFIGURACIÓN */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm sticky top-4">
+              <h3 className="font-bold text-lg mb-4 text-gray-700 flex items-center gap-2">
+                <MdSettings className="text-xl" /> Horarios Disponibles
+              </h3>
+              
+              <div className="space-y-6">
+                <div>
+                  <div className="flex justify-between items-end mb-2">
+                    <label className="block text-xs font-bold text-gray-500 uppercase">Seleccione una Clase</label>
+                    {age !== null && (
+                        <span className="text-xs font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                            Edad del alumno: {age} años
+                        </span>
+                    )}
+                  </div>
+
+                  <div className="relative">
+                      <select 
+                        name="classId" 
+                        value={formData.classId} 
+                        onChange={handleChange} 
+                        disabled={loadingClasses || age === null}
+                        className={`w-full border rounded-xl p-3 text-sm font-medium outline-none appearance-none transition-colors
+                            ${loadingClasses ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-blue-50/30 border-blue-200 text-blue-800'}
+                        `}
+                      >
+                        {/* Lógica de opciones del Select */}
+                        {age === null ? (
+                            <option value="">-- Indique Fecha de Nacimiento Primero --</option>
+                        ) : loadingClasses ? (
+                            <option value="">Buscando clases compatibles...</option>
+                        ) : availableClasses.length === 0 ? (
+                            <option value="">-- No hay clases para esta edad --</option>
+                        ) : (
+                            <option value="">-- Seleccione Horario --</option>
+                        )}
+
+                        {availableClasses.map((clase) => {
+                          const nombreProfe = clase.expand?.entrenador_id?.nombre || 'Sin entrenador';
+                          const apellidoProfe = clase.expand?.entrenador_id?.apellido || '';
+                          
+                          // Formateo de horarios si vienen expandidos (opcional, depende de tu estructura)
+                          // const horariosText = ...
+                          
+                          return (
+                            <option key={clase.id} value={clase.id}>
+                              {clase.nombre} | {nombreProfe} {apellidoProfe} | ${clase.costo} | Min: {clase.edadMin} años
+                            </option>
+                          );
+                        })}
+                      </select>
+                      
+                      {/* Indicador de carga absoluto */}
+                      {loadingClasses && (
+                          <div className="absolute right-3 top-3.5 text-blue-500 animate-spin">
+                              <FaSpinner />
+                          </div>
+                      )}
+                  </div>
+                  
+                  {age === null && (
+                      <p className="text-xs text-orange-500 mt-2 flex items-center gap-1">
+                          <MdEventNote /> Debe ingresar la fecha de nacimiento para filtrar las clases.
+                      </p>
+                  )}
+                </div>
+
+                <button 
+                  onClick={handleNextStep} 
+                  disabled={loadingClasses || availableClasses.length === 0}
+                  className={`cursor-pointer w-full py-4 rounded-xl font-bold text-lg shadow-lg flex justify-center items-center gap-2 transition-all active:scale-95
+                    ${loadingClasses || availableClasses.length === 0 
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                        : 'bg-gray-900 hover:bg-black text-white'}
+                  `}
+                >
+                  Siguiente <MdArrowForward className="text-xl" />
+                </button>
+
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PASO 2 */}
+        {step === 2 && (
+          <div className="max-w-2xl mx-auto space-y-6 animate-fade">
+            <button onClick={() => setStep(1)} disabled={isLoading} className="text-gray-500 hover:text-gray-900 flex items-center gap-1 text-sm font-bold disabled:opacity-50">
+              <MdArrowBack className="text-lg" /> Corregir Datos
+            </button>
+            
+           <SummaryCard 
+              formData={formData}
+              age={age}
+              isMinor={isMinor}
+              selectedClass={selectedClassObj} 
+            />
+            
+            <PaymentForm
+              formData={formData} 
+              setFormData={setFormData} 
+              handleChange={handleChange} 
+              handleSubmit={handleSubmit} 
+              isLoading={isLoading} 
+            />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default InscribirPages;
+
+==================================================
+ARCHIVO: .\src\pages\inscribir\components\PaymentForm.tsx
+==================================================
+
+import type { IFormData } from '@/pages/inscribir/types';
+import React, { useEffect } from 'react';
+import { MdPayments, MdCheckCircle, MdDateRange } from 'react-icons/md';
+
+interface PaymentProps {
+  formData: IFormData;
+  setFormData: React.Dispatch<React.SetStateAction<IFormData>>;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+  handleSubmit: (e: React.FormEvent) => void;
+  isLoading: boolean;
+}
+
+export const PaymentForm: React.FC<PaymentProps> = ({ formData, setFormData, handleChange, handleSubmit, isLoading }) => {
+
+  // Lógica de Opciones de Pago
+  const paymentOptions = {
+    BS: [
+      { value: 'pago_movil', label: 'Pago Móvil' },
+      { value: 'transferencia', label: 'Transferencia Bancaria' },
+      { value: 'efectivo', label: 'Efectivo (Bs)' },
+      { value: 'punto', label: 'Punto de Venta' }
+    ],
+    USD: [
+      { value: 'zelle', label: 'Zelle' },
+      { value: 'efectivo', label: 'Efectivo ($)' },
+      { value: 'binance', label: 'Binance / USDT' },
+      { value: 'transferencia_int', label: 'Transferencia Intl.' }
+    ]
+  };
+  
+  const currentOptions = paymentOptions[formData.currency as keyof typeof paymentOptions] || paymentOptions.BS;
+
+  // --- EFECTO DE CÁLCULO DE FECHA MEJORADO ---
+  useEffect(() => {
+    if (formData.paymentDate) {
+      // 1. Desglosamos la fecha manualmente para evitar problemas de zona horaria (UTC vs Local)
+      const [yearStr, monthStr, dayStr] = formData.paymentDate.split('-');
+      const year = parseInt(yearStr);
+      const month = parseInt(monthStr); // 1 - 12
+      const day = parseInt(dayStr);
+
+      // 2. Calculamos el mes siguiente
+      let nextMonth = month + 1;
+      let nextYear = year;
+
+      if (nextMonth > 12) {
+        nextMonth = 1;
+        nextYear = year + 1;
+      }
+
+      // 3. Ajuste de días (La lógica clave)
+      // Obtenemos el último día del mes destino (ej: Feb = 28 o 29)
+      // new Date(año, mes, 0) devuelve el último día del mes anterior a "mes".
+      // Como nextMonth es 1-based, usarlo tal cual como índice nos da el último día de ESE mes.
+      const daysInNextMonth = new Date(nextYear, nextMonth, 0).getDate();
+
+      // Si el día original (ej: 31) es mayor que los días del mes siguiente (ej: 28),
+      // nos quedamos con el último día disponible (28).
+      // Si no, mantenemos el mismo día (ej: 15).
+      const finalDay = Math.min(day, daysInNextMonth);
+
+      // 4. Formateamos a YYYY-MM-DD con ceros a la izquierda
+      const mm = String(nextMonth).padStart(2, '0');
+      const dd = String(finalDay).padStart(2, '0');
+      const nextMonthStr = `${nextYear}-${mm}-${dd}`;
+
+      // 5. Actualizamos solo si es diferente para evitar bucles
+      if (formData.coverageDate !== nextMonthStr) {
+          setFormData(prev => ({ ...prev, coverageDate: nextMonthStr }));
+      }
+    }
+  }, [formData.paymentDate, setFormData]); 
+
+
+  const handleCurrencyChange = (currency: 'USD' | 'BS') => {
+    const defaultMethod = paymentOptions[currency][0].value;
+    setFormData(prev => ({ 
+      ...prev, 
+      currency, 
+      paymentMethod: defaultMethod 
+    }));
+  };
+
+  const handlePaymentDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      handleChange(e); 
+  };
+
+  return (
+    <div className="bg-gray-900 text-white p-6 rounded-2xl shadow-xl border border-gray-700">
+      <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
+        <MdPayments className="text-green-400 text-2xl" /> Registrar Pago
+      </h3>
+      
+      <div className="space-y-5">
+        {/* Toggle Moneda y Select Método */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex bg-gray-800 rounded-lg p-1">
+            {(['USD', 'BS'] as const).map((curr) => (
+              <button 
+                key={curr} type="button" onClick={() => handleCurrencyChange(curr)}
+                className={`flex-1 py-1.5 rounded font-bold text-xs transition-colors ${formData.currency === curr ? 'bg-white text-gray-900' : 'text-gray-400'}`}
+              >
+                {curr}
+              </button>
+            ))}
+          </div>
+          <select 
+            name="paymentMethod" 
+            value={formData.paymentMethod} 
+            onChange={handleChange} 
+            className="w-full bg-gray-800 border-gray-700 rounded-lg text-sm text-white focus:ring-green-500 focus:border-green-500 p-2 outline-none"
+          >
+            {currentOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+          </select>
+        </div>
+        
+        <div className="p-4 bg-gray-800 rounded-xl border border-gray-700 animate-fade space-y-4">
+           
+           {/* Monto */}
+           <div>
+             <label className="text-xs text-gray-400 font-bold mb-1 block">
+               Monto a Pagar {formData.currency === 'BS' && <span className="text-red-500">*</span>}
+             </label>
+             <div className="relative">
+               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">
+                 {formData.currency === 'USD' ? '$' : 'Bs'}
+               </span>
+               <input 
+                 type="number" 
+                 name="paymentAmount" 
+                 value={formData.paymentAmount || ''} 
+                 onChange={handleChange} 
+                 placeholder="0.00"
+                 min="0"
+                 step="0.01"
+                 required={formData.currency === 'BS'}
+                 className={`w-full bg-gray-700 border rounded p-2 pl-8 text-sm text-white focus:outline-none placeholder-gray-500
+                   ${formData.currency === 'BS' && (!formData.paymentAmount || formData.paymentAmount <= 0) ? 'border-red-500/50 focus:border-red-500' : 'border-gray-600 focus:border-green-500'}
+                 `} 
+               />
+             </div>
+             {formData.currency === 'BS' && (!formData.paymentAmount || formData.paymentAmount <= 0) && (
+               <p className="text-[10px] text-red-400 mt-1">* Obligatorio en Bolívares</p>
+             )}
+           </div>
+
+           {/* Referencia */}
+           {!formData.paymentMethod.includes('efectivo') && (
+             <div>
+               <label className="text-xs text-gray-400 font-bold mb-1 block">Número de Referencia</label>
+               <input 
+                 type="text" name="paymentRef" value={formData.paymentRef} onChange={handleChange} required={!formData.paymentMethod.includes('efectivo')}
+                 placeholder="Ej: 123456" 
+                 className="w-full bg-gray-700 border-gray-600 rounded p-2 text-sm text-white focus:outline-none focus:border-green-500" 
+               />
+             </div>
+           )}
+
+           <div className="grid grid-cols-2 gap-4">
+             {/* Fecha Pago */}
+             <div>
+               <label className="text-xs text-gray-400 font-bold mb-1 block">Fecha de Pago</label>
+               <input 
+                 type="date" 
+                 name="paymentDate"
+                 value={formData.paymentDate}
+                 onChange={handlePaymentDateChange}
+                 className="w-full bg-gray-700 border-gray-600 rounded p-2 text-sm text-white focus:outline-none focus:border-green-500" 
+               />
+             </div>
+
+             {/* Fecha Cobertura */}
+             <div>
+               <label className="text-xs text-green-400 font-bold mb-1 flex items-center gap-1">
+                 <MdDateRange /> Cobertura Hasta
+               </label>
+               <input 
+                 type="date" 
+                 name="coverageDate"
+                 value={formData.coverageDate}
+                 onChange={handleChange}
+                 className="w-full bg-gray-900 border border-green-600/50 rounded p-2 text-sm text-green-400 font-bold focus:outline-none focus:border-green-500" 
+               />
+             </div>
+           </div>
+        </div>
+
+        <button onClick={handleSubmit} disabled={isLoading} className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg flex justify-center items-center gap-2 mt-4 transition-all ${isLoading ? 'bg-gray-600 cursor-not-allowed opacity-70' : 'bg-green-600 hover:bg-green-500 text-white active:scale-95'}`}>
+          {isLoading ? <span className="flex items-center gap-2">Guardando...</span> : <><MdCheckCircle className="text-xl" /> Confirmar Inscripción</>}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+==================================================
+ARCHIVO: .\src\pages\inscribir\components\PersonalDataForm.tsx
+==================================================
+
+
+import React from 'react';
+import { InputGroup } from '@/components/InputGroup';
+import type { IFormData } from '@/pages/inscribir/types';
+import { MdPerson, MdCalendarToday } from 'react-icons/md';
+
+interface Props {
+  formData: IFormData;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  age: number | null;
+  isMinor: boolean;
+}
+
+export const PersonalDataForm: React.FC<Props> = ({ formData, handleChange, age, isMinor }) => {
+  // 1. CÁLCULO DE LA FECHA LÍMITE (Igual que antes)
+  const today = new Date();
+  const minAge = 0; 
+  const maxYear = today.getFullYear() - minAge;
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const maxDateAllowed = `${maxYear}-${month}-${day}`;
+
+  // --- NUEVOS MANEJADORES DE VALIDACIÓN ---
+
+  // A. Forzar Mayúsculas (Para Nombres y Apellidos)
+  const handleUpperCase = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    e.target.value = e.target.value.toUpperCase();
+    handleChange(e);
+  };
+
+ const handleOnlyNumbers = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Reemplaza cualquier cosa que NO sea un número (0-9) por vacío
+    // CORREGIDO: Faltaban los paréntesis y las barras / /
+    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    handleChange(e);
+  };
+  return (
+    <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+      <h3 className="font-bold text-lg mb-4 text-blue-600 flex items-center gap-2">
+        <MdPerson className="text-2xl" /> Datos Personales
+      </h3>
+
+      {/* NOMBRES Y APELLIDOS EN MAYÚSCULAS */}
+      <div className="grid grid-cols-2 gap-3">
+        <InputGroup 
+            label="Nombres" 
+            name="name" 
+            value={formData.name} 
+            onChange={handleUpperCase} // <--- Validación aplicada
+            required 
+        />
+        <InputGroup 
+            label="Apellidos" 
+            name="surname" 
+            value={formData.surname} 
+            onChange={handleUpperCase} // <--- Validación aplicada
+            required 
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="text-xs font-bold text-gray-500 ml-1 block mb-1">Cédula</label>
+          <div className="flex">
+            <select name="cedulaType" value={formData.cedulaType} onChange={handleChange} className="bg-gray-50 border border-gray-300 border-r-0 rounded-l-lg text-sm pl-3 pr-2 py-2.5 outline-none">
+              <option>V</option><option>E</option>
+            </select>
+            <input 
+                type="tel" 
+                maxLength={10} 
+                name="cedulaNum" 
+                value={formData.cedulaNum} 
+                onChange={handleOnlyNumbers} // <--- Validación aplicada (Solo números)
+                className="w-full border border-gray-300 rounded-r-lg p-2.5 focus:outline-none focus:border-blue-500 font-mono" 
+                placeholder="12345678" 
+            />
+          </div>
+        </div>
+        
+        {/* INPUT DE FECHA */}
+        <div>
+          <label className="text-xs font-bold text-gray-500 ml-1 block mb-1">Nacimiento <span className="text-red-500">*</span></label>
+          <div className="relative">
+            <input 
+              type="date" 
+              name="dob" 
+              value={formData.dob} 
+              onChange={handleChange} 
+              max={maxDateAllowed}
+              className="w-full border border-gray-300 rounded-lg p-2.5 focus:outline-none focus:border-blue-500 relative z-10 bg-transparent uppercase" 
+            />
+            <MdCalendarToday className="absolute right-3 bottom-3 text-gray-400 pointer-events-none z-0" />
+          </div>
+        </div>
+      </div>
+
+       <div className="grid grid-cols-2 gap-3 items-end">
+        <div>
+          <label className="text-xs font-bold text-gray-500 ml-1 block mb-1">Edad</label>
+          <div className="w-full p-2.5 bg-blue-50 border border-blue-100 rounded-lg text-sm font-bold text-blue-800 text-center">
+            {age !== null ? `${age} Años` : '--'}
+          </div>
+        </div>
+        
+        {/* TELÉFONO SOLO NÚMEROS */}
+        <div>
+          <label className={`text-xs font-bold ml-1 block mb-1 ${isMinor ? 'text-gray-400' : 'text-gray-500'}`}>
+            Teléfono {isMinor && '(Inactivo)'}
+          </label>
+          <div className={`flex transition-opacity ${isMinor ? 'opacity-50' : 'opacity-100'}`}>
+            <select
+                   name="phoneCode"
+                   value={formData.phoneCode}
+                   onChange={handleChange}
+                   className={`bg-gray-100 border border-gray-300 border-r-0 rounded-l-lg text-sm px-2 py-2.5 outline-none focus:bg-white focus:border-blue-500 transition-colors cursor-pointer text-center font-bold text-gray-700 w-20`}
+               >
+                   <option value="0412">0412</option>
+                   <option value="0414">0414</option>
+                   <option value="0424">0424</option>
+                   <option value="0416">0416</option>
+                   <option value="0426">0426</option>
+               </select>
+            <input 
+                type="tel" 
+                name="phoneNum" 
+                value={formData.phoneNum} 
+                onChange={handleOnlyNumbers} // <--- Validación aplicada
+                disabled={isMinor} 
+                className="w-full border border-gray-300 rounded-r-lg p-2.5 focus:outline-none focus:border-blue-500 disabled:bg-gray-100 font-mono" 
+                placeholder={isMinor ? "Bloqueado" : "1234567"} 
+                maxLength={7} 
+            />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <label className="text-xs font-bold text-gray-500 ml-1 block mb-1">Dirección <span className="text-red-500">*</span></label>
+        <textarea 
+            name="address" 
+            value={formData.address} 
+            onChange={handleUpperCase} // También aplicamos mayúsculas a la dirección para consistencia
+            className="w-full border border-gray-300 rounded-lg p-2.5 text-sm resize-none uppercase focus:outline-none focus:border-blue-500 h-20"
+        ></textarea>
+      </div>
+    </div>
+  );
+};
+
+==================================================
+ARCHIVO: .\src\pages\inscribir\components\RepresentativeForm.tsx
+==================================================
+
+import React from 'react';
+import { InputGroup } from '@/components/InputGroup';
+import type { IFormData } from '@/pages/inscribir/types';
+import { MdFamilyRestroom } from 'react-icons/md';
+
+interface RepProps {
+  formData: IFormData;
+  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+}
+
+export const RepresentativeForm: React.FC<RepProps> = ({ formData, handleChange }) => {
+
+  // --- MANEJADORES DE VALIDACIÓN ---
+
+  // A. Forzar Mayúsculas (Nombres y Apellidos)
+  const handleUpperCase = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.target.value = e.target.value.toUpperCase();
+    handleChange(e);
+  };
+
+  // B. Solo Números (Cédula y Teléfono)
+  const handleOnlyNumbers = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    handleChange(e);
+  };
+
+  return (
+    <div className="pt-4 mt-2 border-t border-dashed border-orange-200 bg-orange-50/50 p-4 rounded-xl animate-fade">
+      <h4 className="font-bold text-xs text-orange-600 mb-3 uppercase flex items-center gap-1">
+        <MdFamilyRestroom className="text-lg" /> Datos del Representante (Obligatorio)
+      </h4>
+      
+      <div className="space-y-3">
+        {/* NOMBRES Y APELLIDOS EN MAYÚSCULAS */}
+        <div className="grid grid-cols-2 gap-3">
+          <InputGroup 
+            label="Nombre" 
+            name="repName" 
+            value={formData.repName} 
+            onChange={handleUpperCase} // <--- Validación aplicada
+            className="bg-white border-orange-200" 
+          />
+          <InputGroup 
+            label="Apellido" 
+            name="repSurname" 
+            value={formData.repSurname} 
+            onChange={handleUpperCase} // <--- Validación aplicada
+            className="bg-white border-orange-200" 
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {/* CÉDULA SOLO NÚMEROS */}
+          <div className="flex">
+            <select 
+              name="repCedulaType" 
+              value={formData.repCedulaType} 
+              onChange={handleChange} 
+              className="bg-white border border-orange-200 border-r-0 rounded-l-lg text-xs pl-2 py-2 outline-none text-gray-600"
+            >
+              <option>V</option>
+              <option>E</option>
+            </select>
+            <input 
+              type="tel" 
+              maxLength={10} 
+              name="repCedulaNum" 
+              placeholder="Cédula" 
+              value={formData.repCedulaNum} 
+              onChange={handleOnlyNumbers} // <--- Validación aplicada
+              className="w-full border border-orange-200 bg-white rounded-r-lg p-2 text-sm focus:outline-none focus:border-orange-400 font-mono" 
+            />
+          </div>
+
+          {/* TELÉFONO SOLO NÚMEROS */}
+          <div className="flex">
+            <select 
+              name="repPhoneCode" 
+              value={formData.repPhoneCode} 
+              onChange={handleChange} 
+              className="bg-white border border-orange-200 border-r-0 rounded-l-lg text-xs pl-2 py-2 outline-none text-gray-600"
+            >
+              <option value="0412">0412</option>
+              <option value="0414">0414</option>
+              <option value="0424">0424</option>
+              <option value="0416">0416</option>
+              <option value="0426">0426</option>
+            </select>
+            <input 
+              type="tel" 
+              maxLength={7} 
+              name="repPhoneNum" 
+              placeholder="Teléfono" 
+              value={formData.repPhoneNum} 
+              onChange={handleOnlyNumbers} // <--- Validación aplicada
+              className="w-full border border-orange-200 bg-white rounded-r-lg p-2 text-sm focus:outline-none focus:border-orange-400 font-mono" 
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+==================================================
+ARCHIVO: .\src\pages\inscribir\components\SummaryCard.tsx
+==================================================
+
+import type { IClass, IFormData, IHorario } from '@/pages/inscribir/types'; // Asegúrate de importar IHorario
+import React from 'react';
+
+interface SummaryProps {
+  formData: IFormData;
+  age: number | null;
+  isMinor: boolean;
+  selectedClass?: IClass; 
+}
+
+export const SummaryCard: React.FC<SummaryProps> = ({ formData, age, isMinor, selectedClass }) => {
+
+  // Lógica para formatear la información de la clase
+  const renderClassDetails = () => {
+    // 1. Si no hay clase seleccionada
+    if (!selectedClass) {
+      return <p className="text-gray-400">Sin asignar</p>;
+    }
+
+    // 2. Extraer Entrenador
+    // Nota: Verifica si en tu BD es 'name' o 'nombre'. Usualmente users usa 'name'.
+    const entrenadorObj = selectedClass.expand?.entrenador_id;
+
+    const nombreProfe = entrenadorObj?.nombre  || 'Sin Instructor';
+    
+    // 3. LOGICA COMPLEJA: Extraer Horarios de la tabla intermedia
+    // Accedemos a la relación inversa usando corchetes por los paréntesis en el nombre
+    const relacionesIntermedias = selectedClass.expand?.['clases_horarios(clase_id)'] || [];
+
+    // Limpiamos: entramos al pivote -> expand -> horario_id
+    const horariosLimpios = relacionesIntermedias
+      .map((item) => item.expand?.horario_id)
+      .filter((h): h is IHorario => h !== undefined); // Filtramos los vacíos
+
+    // 4. Generar el texto final
+    const textoHorarios = horariosLimpios.length > 0
+      ? horariosLimpios.map(h => `${h.dia} ${h.hora}`).join(', ') // Ajusta 'hora_inicio' según tu interfaz real
+      : 'Horario por definir';
+
+    return (
+      <div className="flex flex-col gap-1">
+        {/* Nombre de la clase */}
+        <p className="text-blue-600 font-bold text-xl leading-tight">
+          {selectedClass.nombre}
+        </p>
+
+        {/* Detalles: Profesor y Horario */}
+        <div className="text-gray-500 text-sm font-medium">
+           <p>Prof: <span className="text-gray-700 uppercase">{nombreProfe}</span></p>
+           <p className="mt-0.5">{textoHorarios}</p>
+        </div>
+
+        {/* Precio */}
+        <p className="text-green-600 font-bold text-lg mt-1">
+          ${selectedClass.costo}
+        </p>
+      </div>
+    );
+  };
+
+  return (
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
+      {/* HEADER AZUL */}
+      <div className="bg-blue-600 p-6 text-white relative">
+        <h2 className="text-3xl font-black uppercase truncate">
+          {formData.name || '---'} {formData.surname || '---'}
+        </h2>
+        <div className="flex gap-4 mt-2 text-sm font-medium opacity-90">
+          <span>{formData.cedulaType}-{formData.cedulaNum || '---'}</span>
+          <span>•</span>
+          <span>{age !== null ? `${age} Años` : '--'}</span>
+        </div>
+      </div>
+      
+      <div className="p-6 text-sm text-gray-600 space-y-4">
+        <div className="grid grid-cols-2 gap-6 pb-4 border-b border-gray-100">
+          
+          {/* SECCIÓN DE CLASE ACTUALIZADA */}
+          <div className="col-span-1">
+            <p className="text-xs text-gray-400 font-bold uppercase mb-2">Clase Seleccionada</p>
+            {renderClassDetails()}
+          </div>
+
+          <div className="col-span-1">
+            <p className="text-xs text-gray-400 font-bold uppercase mb-2">Dirección</p>
+            <p className="text-gray-800 uppercase line-clamp-3">{formData.address || '---'}</p>
+          </div>
+        </div>
+        
+        {/* CONTACTO */}
+        <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
+          <p className="text-xs text-gray-400 font-bold uppercase mb-2">Contacto Principal</p>
+          {isMinor ? (
+            <>
+              <p className="font-bold text-gray-900 text-lg uppercase">{formData.repName} {formData.repSurname}</p>
+              <p className="text-gray-500">{formData.repPhoneCode}-{formData.repPhoneNum}</p>
+              <span className="text-xs text-orange-500 font-bold mt-1 inline-block bg-orange-100 px-2 py-0.5 rounded">REPRESENTANTE</span>
+            </>
+          ) : (
+              <p className="font-bold text-gray-900 text-lg">{formData.phoneCode}-{formData.phoneNum}</p>
+          )}
+        </div>
+
+        {formData.hasMedical && (
+          <div className="bg-red-50 p-3 rounded-xl border border-red-100 text-red-800 animate-fade">
+              <strong className="block text-xs uppercase text-red-400 mb-1">Condición Médica</strong>
+              <span className="uppercase font-medium">{formData.medicalDesc}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+==================================================
+ARCHIVO: .\src\pages\inscribir\services\inscribir.ts
+==================================================
+
+import { pb } from '@/lib/pb';
+import { ClientResponseError } from 'pocketbase';
+import type { IClass, IFormData } from '@/pages/inscribir/types';
+
+// 1. Modificamos la función para recibir la edad (studentAge)
+export const getClases = async (studentAge: number): Promise<IClass[]> => {
+  try {
+    // Validación de seguridad: si la edad no es válida o es 0, no traemos nada
+    // o podrías quitar este if si quieres traer todo cuando no hay edad.
+    if (studentAge === null || studentAge === undefined) return [];
+
+    return await pb.collection('clases').getFullList<IClass>({
+      sort: 'created',
+      // 2. Aplicamos el filtro: 
+      //    activo=true (Clase activa) Y 
+      //    edadMin <= studentAge (La edad mínima requerida es menor o igual a la edad del alumno)
+      filter: `activo=true && edadMin <= ${studentAge}`, 
+      
+      expand: 'entrenador_id,clases_horarios_via_clase_id.horario_id', 
+    });
+  } catch (error) {
+    console.error("Error al cargar clases:", error);
+    return [];
+  }
+};
+
+export const saveInscription = async (formData: IFormData, age: number | null) => {
+  // 1. Validaciones Previas
+  if (age === null) throw new Error("La edad no ha sido calculada correctamente.");
+  if (!formData.classId) throw new Error("Debe seleccionar un horario de clase.");
+  if (!formData.paymentDate || !formData.coverageDate) {
+    throw new Error("Debe indicar la Fecha de Pago y la Fecha de Cobertura.");
+  }
+
+  // Lógica de variables
+  const isMinor = age < 18;
+  const finalPhone = isMinor ? `${formData.repPhoneCode}-${formData.repPhoneNum}` : `${formData.phoneCode}-${formData.phoneNum}`;
+  const finalCedula = `${formData.cedulaType}-${formData.cedulaNum}`;
+  const repFullName = `${formData.repName} ${formData.repSurname}`.trim();
+  const repCedula = `${formData.repCedulaType}-${formData.repCedulaNum}`;
+
+  // VARIABLES DE CONTROL PARA ROLLBACK
+  let createdAtletaId: string | null = null;
+  let createdMatriculaId: string | null = null;
+
+  try {
+    // --- PASO A: OBTENER DATOS DE LA CLASE ---
+    const claseRecord = await pb.collection('clases').getOne<IClass>(formData.classId);
+
+    // --- PASO B: CREAR ATLETA ---
+    const atletaData = {
+      nombre: formData.name,
+      apellido: formData.surname,
+      cedula: finalCedula,
+      telefono: finalPhone,
+      direccion: formData.address,
+      fecha_nacimiento: new Date(formData.dob).toISOString(),
+      representante_nombre: isMinor ? repFullName : '',
+      representante_cedula: isMinor ? repCedula : '',
+      condicion_medica: formData.hasMedical ? formData.medicalDesc : '',
+      activo: true,
+    };
+
+    const atleta = await pb.collection('atletas').create(atletaData);
+    createdAtletaId = atleta.id; 
+
+    // --- PASO C: CREAR MATRÍCULA ---
+    const matriculaData = {
+      atleta_id: atleta.id,
+      clase_id: claseRecord.id,
+      activo: true,
+      fecha_inscripcion: new Date().toISOString()
+    };
+
+    const matricula = await pb.collection('matriculas').create(matriculaData);
+    createdMatriculaId = matricula.id; 
+
+    // --- PASO D: REGISTRAR PAGO ---
+    const pagoData = {
+      matricula_id: matricula.id,
+      monto: formData.paymentAmount || claseRecord.costo || 0,
+      referencia: formData.paymentMethod === 'efectivo' ? 'EFECTIVO' : formData.paymentRef,
+      metodo: formData.paymentMethod,
+      type: formData.currency,
+      fecha_pago: new Date(formData.paymentDate).toISOString(),
+      cobertura_desde: new Date(formData.paymentDate).toISOString(),
+      cobertura_hasta: new Date(formData.coverageDate).toISOString(),
+    };
+
+    const pago = await pb.collection('pagos').create(pagoData);
+
+    return {
+      success: true,
+      atletaId: atleta.id,
+      matriculaId: matricula.id,
+      pagoId: pago.id
+    };
+
+  } catch (error: unknown) {
+    console.error("❌ Error en el proceso. Iniciando ROLLBACK...", error);
+
+    // --- LÓGICA DE ROLLBACK ---
+    try {
+      if (createdMatriculaId) {
+        await pb.collection('matriculas').delete(createdMatriculaId);
+        console.log(`Rollback: Matrícula ${createdMatriculaId} eliminada.`);
+      }
+      
+      if (createdAtletaId) {
+        await pb.collection('atletas').delete(createdAtletaId);
+        console.log(`Rollback: Atleta ${createdAtletaId} eliminado.`);
+      }
+    } catch (rollbackError) {
+      console.error("CRÍTICO: Falló el Rollback manual.", rollbackError);
+    }
+
+    if (error instanceof ClientResponseError) {
+      const details = error.response?.data ? JSON.stringify(error.response.data) : error.message;
+      throw new Error(`Error al guardar: ${details}`);
+    } else if (error instanceof Error) {
+      throw new Error(error.message);
+    } else {
+      throw new Error("Error desconocido durante la inscripción.");
+    }
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\inscribir\types\error.ts
+==================================================
+
+
+export class FormValidError extends Error {
+
+  constructor(message: string = 'Error validación de formulario') {
+    super(message);
+    this.name = "FormValidError";
+  }
+}
+
+==================================================
+ARCHIVO: .\src\pages\inscribir\types\index.ts
+==================================================
+
+
+export interface IEntrenador {
+  id: string;
+  nombre: string; 
+  apellido: string;
+}
+
+export interface IHorario {
+  id: string;
+  dia: string;
+  hora: string;     
+}
+export interface IClass {
+  id: string;
+  nombre: string;
+  costo: number;
+  edadMin: number;
+  
+  // Campos "crudos" en la base de datos (son los IDs)
+  entrenador_id: string; 
+  horarios: string[]; // Array de strings porque es Many-to-Many
+  
+  // Aquí es donde PocketBase pone los datos traídos de las otras tablas
+  expand?: {
+    entrenador_id?: IEntrenador; // Objeto único (relación 1 a 1)
+    "clases_horarios(clase_id)"?: Array<{
+      expand?: {
+        horario_id?: IHorario; // Aquí está finalmente el horario
+      }
+    }> // Array de objetos (relación muchos a muchos)
+  }
+}
+
+export interface IFormData {
+  // ... (tus campos anteriores: name, surname, cedula, etc...)
+  name: string;
+  surname: string;
+  cedulaType: string;
+  cedulaNum: string;
+  dob: string;
+  phoneCode: string;
+  phoneNum: string;
+  address: string;
+  
+  // Representante
+  repName: string;
+  repSurname: string;
+  repCedulaType: string;
+  repCedulaNum: string;
+  repPhoneCode: string;
+  repPhoneNum: string;
+
+  // Salud
+  hasMedical: boolean;
+  medicalDesc: string;
+
+  // CAMBIO AQUÍ: Reemplazamos 'schedule' por 'classId'
+  classId: string; 
+
+  currency: 'USD' | 'BS';
+  paymentMethod: string;
+  paymentRef: string;
+  paymentDate: string;  // Fecha de Pago (y Cobertura Desde)
+  coverageDate: string; // NUEVO: Cobertura Hasta
+  paymentAmount: number
+  
+  displayClassName?: string;
+
+}
+
+==================================================
+ARCHIVO: .\src\pages\login\LoginPage.tsx
+==================================================
+
+import { useLogin } from "@/pages/login/hooks/useAuth"
+import type React from "react"
+import { Link } from "react-router-dom";
+
+export default function LoginPage() {
+
+    const {login, isLoading, error} = useLogin()
+
+    
+     const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      const formData = new FormData(e.currentTarget);
+
+      const data = Object.fromEntries(formData.entries());
+      console.log(data);
+      const credentials = {
+        email:  data.email as string,
+        password: data.password as string
+      };
+      login(credentials);
+     };
+
+  return (
+    <>
+      <div className=" bg-slate-100 min-h-screen flex items-center justify-center">
+        <div className=" w-auto m-auto bg-white p-10 rounded-4xl shadow-md" > 
+
+          <h1 className="mb-10 p-4 font-titulo font-black text-blue-800 text-4xl uppercase">Inicio de sesion</h1>
+          <form onSubmit={handleLogin} className=" flex flex-col gap-12 ">
+          
+            <input className=" text-xl border-b-2 p-2 outline-none focus:ring-0 focus:border-blue-500"  type="email" id="email" name="email" required  placeholder="Correo electronico"/>
+          
+
+            <input className="text-xl border-b-2 p-2 outline-none focus:ring-0 focus:border-blue-500" type="password" id="password" name="password" required placeholder="Contraseña"/>
+          
+            <div className="flex justify-end">  
+              {
+              isLoading ? <p>Loading...</p>: 
+              
+              <button className=" mt-8  w-fit px-4 bg-blue-700 uppercase font-bold text-white p-2 rounded text-xl cursor-pointer hover:bg-blue-800 transition-colors " type="submit" disabled={isLoading}>iniciar sesion</button>}   
+              
+            </div>
+            <div> 
+              <Link to="/register" className=" text-sm text-blue-600 ">registrar un nuevo usuario</Link>
+              <p className=" mt-2 text-sm text-gray-500">¿Olvidaste tu contraseña? Contacta al administrador.</p>
+
+            </div>
+            
+
+          </form>
+          {error && <p style={{color: 'red'}}>{error}</p>}
+        </div>
+      </div>
+      
+      
+
+
+    </>
+  )
+}
+
+
+==================================================
+ARCHIVO: .\src\pages\login\hooks\useAuth.ts
+==================================================
+
+import { loginService } from '@/pages/login/services/login';
+import type { LoginCredentials } from '@/pages/login/types';
+import { AuthError } from '@/pages/login/types/error';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; 
+
+export const useLogin = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  const login = async (credentials: LoginCredentials) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      await loginService(credentials);
+      
+      navigate('/'); 
+      
+    } catch (err) {
+        if (err instanceof AuthError) {
+          setError(err.message);
+        } else {
+          setError('Ocurrió un error inesperado. Por favor, intenta de nuevo o reinicia la aplicación.');
+        }
+      
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return {
+    login,
+    isLoading,
+    error
+  };
+};
+
+==================================================
+ARCHIVO: .\src\pages\login\services\login.ts
+==================================================
+
+import { pb } from "@/lib/pb";
+import type { LoginCredentials, UserAuthResponse } from "@/pages/login/types";
+import { AuthError } from "@/pages/login/types/error";
+
+
+export const loginService = async ({ email, password }: LoginCredentials): Promise<UserAuthResponse> => {
+  try {
+
+    const authData = await pb.collection('users').authWithPassword(
+      email,
+      password
+    );
+    
+    return {
+      token: authData.token
+    };
+  } catch (error) {
+
+    console.error("Error en servicio de auth:", error);
+    throw new AuthError('Credenciales inválidas o error de conexión');
+  }
+};
+
+
+==================================================
+ARCHIVO: .\src\pages\login\services\logout.ts
+==================================================
+
+import { pb } from "@/lib/pb";
+
+export const logoutService = () => {
+  pb.authStore.clear(); // Limpia el token y el usuario actual
+};
+
+==================================================
+ARCHIVO: .\src\pages\login\types\error.ts
+==================================================
+
+
+export class AuthError extends Error {
+
+  constructor(message: string = 'Error de autenticación') {
+    super(message);
+    this.name = "AuthError";
+  }
+}
+
+==================================================
+ARCHIVO: .\src\pages\login\types\index.ts
+==================================================
+
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface UserAuthResponse {
+  token: string;
+}
