@@ -62,6 +62,7 @@ export interface Matricula extends RecordModel {
   atleta_id: string;
   clase_id: string;
   activo: boolean;
+  deleted: boolean;
   expand?: {
     atleta_id: Atleta;
   };
@@ -90,4 +91,16 @@ export interface ClaseFull extends RecordModel {
   expand?: {
     entrenador_id: Entrenador;
   };
+}
+
+export interface VistaClaseAlumno {
+  id: string; // ID de la matrícula
+  clase_id: string;
+  matricula_activa: boolean;
+  atleta_id: string;
+  atleta_nombre: string;
+  atleta_apellido: string;
+  atleta_cedula: string;
+  atleta_telefono: string;
+  cobertura_hasta: string | null;
 }

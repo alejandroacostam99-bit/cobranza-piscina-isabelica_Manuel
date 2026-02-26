@@ -426,6 +426,9 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import EntrenadorPerfil from "@/pages/entrenadores/components/EntrenadorPerfil";
 import ClasesForm from "@/pages/entrenadores/components/ClasesForm";
 import ClasesDetails from "@/pages/entrenadores/components/ClasesDetails";
+import ListAtletas from "@/pages/atletas/components/ListAtletas";
+import AtletaPerfil from "@/pages/atletas/components/AtletaPerfil";
+import AtletaMatricular from "@/pages/atletas/components/AtletaMatricular";
 
 export const router = createBrowserRouter([
   { 
@@ -442,7 +445,14 @@ export const router = createBrowserRouter([
         element: <DashboardLayout />, 
         children: [
           { index: true, element: <DashboardPages /> },
-          { path: "atletas", element: <AtletasPages /> },
+          { path: "atletas", element: <AtletasPages />,
+            children: [
+              {  element: <ListAtletas /> , index:true},
+              { path: "perfil/:id", element: <AtletaPerfil /> },
+              { path: "matricular/:id", element: <AtletaMatricular /> },
+              {path: "*", element: <Navigate to="/atletas" replace />}
+            ]
+           },
           { path: "entrenadores", element: <EntrenadoresPages />,
             children: [ 
               {  element: <ListEntrenadores /> , index:true},
@@ -700,52 +710,831 @@ export function cn(...inputs: ClassValue[]) {
 ARCHIVO: .\src\pages\atletas\AtletasPages.tsx
 ==================================================
 
-import ListAtletas from "@/pages/atletas/components/ListAtletas";
+import { Outlet } from 'react-router-dom';
 
 export default function AtletasPages() {
   return (
-    <div>
-
-      <ListAtletas />
-
-
+    <div className="animate-fade-in">
+      <Outlet />
     </div>
   )
 }
 
+==================================================
+ARCHIVO: .\src\pages\atletas\components\AtletaMatricular.tsx
+==================================================
+
+import React, { useEffect, useState, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+
+// Iconos
+import { 
+  FaArrowLeft, FaSpinner, FaSave, FaCheckCircle, 
+  FaSwimmer, FaIdCard, FaBirthdayCake, FaChalkboardTeacher
+} from 'react-icons/fa';
+import { MdPool } from "react-icons/md";
+
+// Componente de Pago Autónomo
+import { PaymentForm, type IPaymentData } from './PaymentForm';
+
+// Servicios y Tipos
+import { getAtletaById } from '@/pages/atletas/services/getAtletaById';
+import { getClasesDisponibles } from '@/pages/atletas/services/getClasesDisponibles';
+import { getMatriculasByAtleta } from '@/pages/atletas/services/getMatriculasByAtletas';
+import { createMatricula, type CreateMatriculaConPagoDTO } from '@/pages/atletas/services/createMatricula';
+import type { Atleta, Clase } from '@/pages/atletas/types';
+
+// Obtener fecha local (YYYY-MM-DD)
+const getLocalDateString = () => {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+const AtletaMatricular: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  const [atleta, setAtleta] = useState<Atleta | null>(null);
+  const [clasesFiltradas, setClasesFiltradas] = useState<Clase[]>([]);
+  
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const [selectedClaseId, setSelectedClaseId] = useState<string>('');
+  
+  const hoyStr = getLocalDateString();
+  const [paymentData, setPaymentData] = useState<IPaymentData>({
+    currency: 'BS',
+    paymentMethod: 'pago_movil',
+    paymentAmount: '',
+    paymentRef: '',
+    paymentDate: hoyStr,
+    coverageDate: hoyStr, 
+  });
+
+  const edadAtleta = useMemo(() => {
+    if (!atleta?.fecha_nacimiento) return 0;
+    const birthDate = new Date(atleta.fecha_nacimiento);
+    let age = new Date().getFullYear() - birthDate.getFullYear();
+    if (new Date().getMonth() < birthDate.getMonth() || (new Date().getMonth() === birthDate.getMonth() && new Date().getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  }, [atleta?.fecha_nacimiento]);
+
+  useEffect(() => {
+    if (!id) return;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [atletaData, clasesData, matriculasData] = await Promise.all([
+          getAtletaById(id),
+          getClasesDisponibles(),
+          getMatriculasByAtleta(id)
+        ]);
+
+        setAtleta(atletaData);
+
+        const birthDate = new Date(atletaData.fecha_nacimiento);
+        let age = new Date().getFullYear() - birthDate.getFullYear();
+        if (new Date().getMonth() < birthDate.getMonth() || (new Date().getMonth() === birthDate.getMonth() && new Date().getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        const clasesInscritasIds = matriculasData.map(m => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const mat = m as any; 
+            return mat.clase_id || mat.clase || mat.expand?.clase_id?.id || "";
+        });
+
+        const clasesValidas = clasesData.filter(clase => {
+            const edadMin = Number(clase.edadMin) || 0;
+            return edadMin <= age && !clasesInscritasIds.includes(clase.id);
+        });
+
+        setClasesFiltradas(clasesValidas);
+
+      } catch (err) {
+        console.error("Error al cargar datos para matricular:", err);
+        setError("Error al cargar datos");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [id]);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!id || !selectedClaseId) {
+        setError("Debe seleccionar una clase."); return;
+    }
+    if (!paymentData.paymentAmount || Number(paymentData.paymentAmount) <= 0) {
+        setError("El monto del pago debe ser mayor a 0."); return;
+    }
+    if (!paymentData.paymentMethod.includes('efectivo') && !paymentData.paymentRef.trim()) {
+        setError("El número de referencia es obligatorio."); return;
+    }
+
+    try {
+      setSaving(true);
+      
+      const payload: CreateMatriculaConPagoDTO = {
+          matricula: {
+              atleta_id: id,
+              clase_id: selectedClaseId,
+              fecha_inscripcion: paymentData.paymentDate,
+              activo: true
+          },
+          pago: {
+              monto: Number(paymentData.paymentAmount),
+              referencia: paymentData.paymentRef.trim() || 'EFECTIVO',
+              fecha_pago: paymentData.paymentDate + ' 12:00:00.000Z', 
+              cobertura_desde: paymentData.paymentDate,
+              cobertura_hasta: paymentData.coverageDate,
+          }
+      };
+
+      await createMatricula(payload);
+      
+      setSuccess(true);
+      setTimeout(() => navigate(`/atletas/perfil/${id}`), 2000);
+
+    } catch (err) {
+        setError(err instanceof Error ? err.message : "Error desconocido al guardar.");
+    } finally {
+        setSaving(false);
+    }
+  };
+
+  if (loading) return <div className="flex justify-center p-20"><FaSpinner className="animate-spin text-5xl text-blue-600"/></div>;
+  if (!atleta) return <div className="p-10 text-center text-slate-500">Atleta no encontrado.</div>;
+
+  const claseSeleccionada = clasesFiltradas.find(c => c.id === selectedClaseId);
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-6xl animate-fade-in">
+      
+      <button onClick={() => navigate(-1)} className="mb-6 flex items-center text-slate-500 hover:text-blue-600 font-medium text-sm transition-colors">
+        <FaArrowLeft className="mr-2" /> Volver al Perfil
+      </button>
+
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mb-6 flex items-center gap-5">
+         <div className="bg-blue-50 text-blue-600 p-4 rounded-xl"><MdPool className="text-3xl" /></div>
+         <div>
+             <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tight">Nueva Inscripción y Pago</h1>
+             <p className="text-slate-500 text-sm font-medium">Asigna la clase y registra la primera mensualidad de inmediato.</p>
+         </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-slate-50 p-6 border-b border-slate-100 flex items-center gap-4">
+                <div className="w-12 h-12 bg-white rounded-full flex justify-center items-center shadow-sm text-blue-600 border border-slate-200">
+                    <FaSwimmer className="text-xl"/>
+                </div>
+                <div>
+                    <h3 className="font-bold text-slate-800 uppercase">{atleta.nombre} {atleta.apellido}</h3>
+                    <div className="flex gap-3 text-xs font-bold text-slate-500 mt-1">
+                        <span><FaIdCard className="inline"/> {atleta.cedula}</span>
+                        <span><FaBirthdayCake className="inline"/> {edadAtleta} AÑOS</span>
+                    </div>
+                </div>
+            </div>
+
+            <form id="enrollForm" onSubmit={handleSave} className="p-6 md:p-8">
+                
+                {error && <div className="p-4 mb-4 bg-red-50 text-red-600 text-sm font-bold rounded-xl border border-red-100">{error}</div>}
+                
+                {success ? (
+                    <div className="py-10 text-center text-green-600 bg-green-50 rounded-2xl border border-green-100 animate-fade-in-up">
+                        <FaCheckCircle className="text-6xl mx-auto mb-4" />
+                        <h2 className="text-2xl font-black">¡Transacción Exitosa!</h2>
+                    </div>
+                ) : (
+                    <>
+                        <div>
+                            <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Seleccione la Clase *</label>
+                            {clasesFiltradas.length === 0 ? (
+                                <div className="p-4 bg-orange-50 text-orange-600 rounded-xl text-sm font-bold">No hay clases disponibles (Edad o ya inscrito).</div>
+                            ) : (
+                                <select 
+                                    value={selectedClaseId}
+                                    onChange={(e) => {
+                                        setSelectedClaseId(e.target.value);
+                                        const c = clasesFiltradas.find(cl => cl.id === e.target.value);
+                                        if (c && paymentData.currency === 'USD') {
+                                            setPaymentData(prev => ({ ...prev, paymentAmount: c.costo }));
+                                        }
+                                    }}
+                                    className="w-full p-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 font-bold uppercase outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer"
+                                >
+                                    <option value="" disabled>-- SELECCIONE UNA CLASE --</option>
+                                    {clasesFiltradas.map(clase => (
+                                        <option key={clase.id} value={clase.id}>{clase.nombre} (MIN: {clase.edadMin} AÑOS)</option>
+                                    ))}
+                                </select>
+                            )}
+                        </div>
+
+                        {claseSeleccionada && (
+                            <div className="mt-6 bg-blue-50/50 p-5 rounded-xl border border-blue-100 animate-fade-in">
+                                <p className="text-xs text-slate-400 font-bold uppercase mb-2">Resumen de Clase</p>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-sm font-bold text-slate-700 uppercase">
+                                        <FaChalkboardTeacher className="inline text-blue-400 mr-1"/> 
+                                        {claseSeleccionada.expand?.entrenador_id?.nombre} {claseSeleccionada.expand?.entrenador_id?.apellido}
+                                    </span>
+                                    <span className="text-xl font-black text-green-600">${claseSeleccionada.costo} <span className="text-xs font-bold text-green-600/60">/ MES</span></span>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
+            </form>
+        </div>
+
+        <div className="lg:col-span-3">
+            {!success && (
+                <>
+                    <PaymentForm paymentData={paymentData} setPaymentData={setPaymentData} />
+                    
+                    <button 
+                        form="enrollForm"
+                        type="submit" 
+                        disabled={saving || !selectedClaseId || clasesFiltradas.length === 0} 
+                        className="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-200 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {saving ? <FaSpinner className="animate-spin text-xl" /> : <FaSave className="text-xl" />} 
+                        {saving ? 'PROCESANDO...' : 'CONFIRMAR Y PAGAR'}
+                    </button>
+                </>
+            )}
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+export default AtletaMatricular;
+
+==================================================
+ARCHIVO: .\src\pages\atletas\components\AtletaPerfil.tsx
+==================================================
+
+import React, { useEffect, useState, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+
+// Iconos
+import { 
+  FaSave, FaPen, FaArrowLeft, 
+  FaIdCard, FaMapMarkerAlt, FaCheckCircle, 
+  FaSpinner, FaUndo, FaBirthdayCake, FaBriefcaseMedical, FaUserFriends, FaPlusCircle,
+  FaSwimmer // Icono solicitado
+} from 'react-icons/fa';
+import { MdPool } from "react-icons/md";
+
+// Servicios y Tipos
+import { getAtletaById } from '@/pages/atletas/services/getAtletaById';
+import { updateAtleta } from '@/pages/atletas/services/updateAtleta';
+import { getMatriculasByAtleta } from '@/pages/atletas/services/getMatriculasByAtletas';
+import type { Atleta } from '@/pages/atletas/types';
+
+// Interfaz para manejar el estado del formulario con campos divididos
+interface AtletaFormData extends Partial<Atleta> {
+  phoneCode?: string;
+  simplePhone?: string;
+  cedulaType?: string;
+  cedulaNum?: string;
+  repCedulaType?: string; // Nuevo: Tipo de cédula representante
+  repCedulaNum?: string;  // Nuevo: Número cédula representante
+}
+
+const AtletaPerfil: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+
+  // --- ESTADOS ---
+  const [atleta, setAtleta] = useState<Atleta | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [matriculas, setMatriculas] = useState<any[]>([]);
+  
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  
+  const [formData, setFormData] = useState<AtletaFormData>({});
+  
+  // Feedback UI
+  const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // --- LÓGICA DE EDAD (Calculada en tiempo real) ---
+  const isMinor = useMemo(() => {
+    if (!formData.fecha_nacimiento) return false;
+    const today = new Date();
+    const birthDate = new Date(formData.fecha_nacimiento);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age < 18;
+  }, [formData.fecha_nacimiento]);
+
+  // --- CARGA DE DATOS ---
+  useEffect(() => {
+    if (!id) return;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [atletaData, matriculasData] = await Promise.all([
+          getAtletaById(id),
+          getMatriculasByAtleta(id)
+        ]);
+
+        setAtleta(atletaData);
+        setMatriculas(matriculasData);
+
+        // --- PREPARAR DATOS (Desglose) ---
+        
+        // 1. Teléfono
+        let phCode = "0412";
+        let phNum = "";
+        if (atletaData.telefono && atletaData.telefono.length > 4) {
+             if(atletaData.telefono.includes('-')){
+                 const parts = atletaData.telefono.split('-');
+                 phCode = parts[0];
+                 phNum = parts[1];
+             } else {
+                 phCode = atletaData.telefono.substring(0, 4);
+                 phNum = atletaData.telefono.substring(4);
+             }
+        }
+
+        // 2. Cédula Atleta
+        let cedType = "V";
+        let cedNum = "";
+        if (atletaData.cedula) {
+             const clean = atletaData.cedula.toUpperCase();
+             if(clean.includes('-')){
+                 const parts = clean.split('-');
+                 cedType = parts[0];
+                 cedNum = parts[1];
+             } else {
+                 cedType = clean.charAt(0);
+                 cedNum = clean.substring(1);
+             }
+        }
+
+        // 3. Cédula Representante
+        let repType = "V";
+        let repNum = "";
+        if (atletaData.representante_cedula) {
+            const cleanRep = atletaData.representante_cedula.toUpperCase();
+            if(cleanRep.includes('-')){
+                const parts = cleanRep.split('-');
+                repType = parts[0];
+                repNum = parts[1];
+            } else {
+                repType = cleanRep.charAt(0);
+                repNum = cleanRep.substring(1);
+            }
+        }
+
+        // 4. Fecha (Formateo Correcto YYYY-MM-DD)
+        let formattedDate = "";
+        if (atletaData.fecha_nacimiento) {
+            formattedDate = new Date(atletaData.fecha_nacimiento).toISOString().split('T')[0];
+        }
+
+        setFormData({
+            ...atletaData,
+            phoneCode: phCode,
+            simplePhone: phNum,
+            cedulaType: cedType,
+            cedulaNum: cedNum,
+            repCedulaType: repType,
+            repCedulaNum: repNum,
+            fecha_nacimiento: formattedDate
+        });
+
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error desconocido");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, [id]);
+
+  // --- MANEJADORES ---
+  
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    // Forzar mayúsculas solo en inputs de texto visible
+    const finalValue = (type === 'text' || type === 'textarea') ? value.toUpperCase() : value;
+    setFormData(prev => ({ ...prev, [name]: finalValue }));
+  };
+
+  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const onlyNums = value.replace(/[^0-9]/g, '');
+    setFormData(prev => ({ ...prev, [name]: onlyNums }));
+  };
+
+  // --- VALIDACIÓN (Todas las alertas juntas) ---
+  const validateForm = (): boolean => {
+    const errors: string[] = [];
+
+    // Validaciones Atleta
+    if (!formData.nombre?.trim()) errors.push("- El NOMBRE es obligatorio.");
+    if (!formData.apellido?.trim()) errors.push("- El APELLIDO es obligatorio.");
+
+    if(!isMinor){
+        if(!formData.cedulaNum?.trim()) errors.push("- La CÉDULA es obligatoria.");
+    }
+
+    if (!formData.fecha_nacimiento) errors.push("- La FECHA DE NACIMIENTO es obligatoria.");
+
+    if (!formData.simplePhone?.trim()) errors.push("- El TELÉFONO es obligatorio.");
+    else if (formData.simplePhone.length !== 7) errors.push("- El TELÉFONO debe tener 7 dígitos.");
+
+    if (!formData.direccion?.trim()) errors.push("- La DIRECCIÓN es obligatoria.");
+
+    // Validaciones Representante (Solo si es menor)
+    if (isMinor) {
+        if (!formData.representante_nombre?.trim()) errors.push("- Nombre del REPRESENTANTE es obligatorio (es menor de edad).");
+        
+        if (!formData.repCedulaNum?.trim()) errors.push("- Cédula del REPRESENTANTE es obligatoria (es menor de edad).");
+        else if (formData.repCedulaNum.length < 5) errors.push("- La CÉDULA del representante es muy corta.");
+    }
+
+    // Si hay errores, mostrarlos todos juntos
+    if (errors.length > 0) {
+        alert("POR FAVOR CORRIJA LOS SIGUIENTES ERRORES:\n\n" + errors.join("\n"));
+        return false;
+    }
+
+    return true;
+  };
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id) return;
+
+    if (!validateForm()) return;
+
+    try {
+      setSaving(true);
+      setError(null);
+
+      // Reconstruir Strings
+      const finalPhone = `${formData.phoneCode}-${formData.simplePhone}`;
+      const finalCedula = `${formData.cedulaType}-${formData.cedulaNum}`;
+      const finalRepCedula = isMinor ? `${formData.repCedulaType}-${formData.repCedulaNum}` : '';
+
+      const payload: Partial<Atleta> = {
+        nombre: formData.nombre,
+        apellido: formData.apellido,
+        cedula: finalCedula,
+        telefono: finalPhone,
+        fecha_nacimiento: new Date(formData.fecha_nacimiento!).toISOString(),
+        direccion: formData.direccion,
+        condicion_medica: formData.condicion_medica,
+        // Representante
+        representante_nombre: isMinor ? formData.representante_nombre : '',
+        representante_cedula: finalRepCedula,
+      };
+
+      const updated = await updateAtleta(id, payload);
+      setAtleta(updated);
+      setSuccessMsg("Perfil actualizado correctamente");
+      setIsEditing(false);
+      setTimeout(() => setSuccessMsg(null), 3000);
+
+    } catch (err) {
+      setError("No se pudieron guardar los cambios. Verifique su conexión.");
+      console.error(err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    window.location.reload(); 
+  };
+
+  // --- RENDER ---
+  if (loading) return <div className="flex justify-center p-10"><FaSpinner className="animate-spin text-4xl text-blue-600"/></div>;
+  if (!atleta) return <div className="p-10 text-center">Atleta no encontrado</div>;
+
+  // Clases CSS
+  const inputClass = `w-full p-2.5 rounded-lg border transition-all outline-none text-sm uppercase ${
+    isEditing 
+      ? 'border-blue-300 focus:ring-2 focus:ring-blue-500/20 bg-white text-slate-800' 
+      : 'border-transparent bg-slate-100 text-slate-600 font-medium cursor-not-allowed'
+  }`;
+
+  const labelClass = "block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1";
+  
+  const prefixSelectClass = `rounded-l-lg border-r-0 text-center font-bold text-slate-700 cursor-pointer text-sm outline-none ${
+    isEditing 
+      ? 'bg-slate-50 border border-blue-300 focus:ring-2 focus:ring-blue-500/20' 
+      : 'bg-slate-200 border-transparent cursor-not-allowed'
+  }`;
+
+  return (
+    <div className="container mx-auto px-4 py-8 max-w-6xl animate-fade-in pb-20">
+      
+      <button onClick={() => navigate(-1)} className="mb-6 flex items-center text-slate-500 hover:text-blue-600 font-medium text-sm transition-colors">
+        <FaArrowLeft className="mr-2" /> Volver al Directorio
+      </button>
+
+      {/* --- HEADER --- */}
+      <div className="bg-gradient-to-r from-cyan-600 to-blue-600 rounded-t-2xl p-8 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-6 mb-6">
+        <div className="flex items-center gap-5">
+          <div className="bg-white/20 p-4 rounded-full backdrop-blur-md border-2 border-white/30 shadow-inner">
+             {/* Icono de Nadador */}
+             <FaSwimmer className="text-4xl text-white" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight uppercase">{atleta.nombre} {atleta.apellido}</h1>
+            <div className="flex gap-3 mt-2">
+                <span className="bg-white/20 px-2 py-0.5 rounded text-xs font-mono flex items-center gap-1">
+                    <FaIdCard/> {atleta.cedula}
+                </span>
+                {atleta.condicion_medica && (
+                    <span className="bg-red-500/80 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1 animate-pulse">
+                        <FaBriefcaseMedical/> CONDICIÓN MÉDICA
+                    </span>
+                )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          {isEditing ? (
+             <button onClick={handleCancel} className="px-4 py-2 rounded-lg font-semibold flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white transition-all backdrop-blur-sm">
+               <FaUndo /> Cancelar
+             </button>
+          ) : (
+            <button onClick={() => setIsEditing(true)} className="px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 bg-white text-blue-700 hover:bg-blue-50 shadow-md transition-all">
+               <FaPen className="text-xs" /> Editar Datos
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* --- FORMULARIO --- */}
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+            
+            {error && <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded border border-red-100">{error}</div>}
+            {successMsg && <div className="mb-4 p-3 bg-green-50 text-green-600 text-sm rounded flex items-center gap-2"><FaCheckCircle/> {successMsg}</div>}
+
+            <form onSubmit={handleSave} className="space-y-5">
+                
+                {/* Nombre y Apellido */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label className={labelClass}>Nombre <span className="text-red-400">*</span></label>
+                        <input type="text" name="nombre" value={formData.nombre || ''} onChange={handleInputChange} disabled={!isEditing} className={inputClass} />
+                    </div>
+                    <div>
+                        <label className={labelClass}>Apellido <span className="text-red-400">*</span></label>
+                        <input type="text" name="apellido" value={formData.apellido || ''} onChange={handleInputChange} disabled={!isEditing} className={inputClass} />
+                    </div>
+                </div>
+
+                {/* Cédula y Teléfono */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {/* Cédula Atleta */}
+                    <div>
+                        <label className={labelClass}>Cédula <span className="text-red-400">*</span></label>
+                        <div className="flex w-full">
+                            <select name="cedulaType" value={formData.cedulaType} onChange={handleInputChange} disabled={!isEditing} className={`w-16 ${prefixSelectClass}`}>
+                                <option value="V">V</option>
+                                <option value="E">E</option>
+                            </select>
+                            <input type="text" name="cedulaNum" maxLength={10} value={formData.cedulaNum || ''} onChange={handleNumberChange} disabled={!isEditing} className={`flex-1 rounded-l-none rounded-r-lg font-mono ${inputClass}`} />
+                        </div>
+                    </div>
+                    
+                    {/* Teléfono (6 Opciones) */}
+                    <div>
+                        <label className={labelClass}>Teléfono <span className="text-red-400">*</span></label>
+                        <div className="flex w-full">
+                            <select name="phoneCode" value={formData.phoneCode} onChange={handleInputChange} disabled={!isEditing} className={`w-24 ${prefixSelectClass}`}>
+                                <option value="0412">0412</option>
+                                <option value="0414">0414</option>
+                                <option value="0424">0424</option>
+                                <option value="0416">0416</option>
+                                <option value="0426">0426</option>
+                                <option value="0241">0241</option> {/* Opción Local */}
+                            </select>
+                            <input type="text" name="simplePhone" maxLength={7} value={formData.simplePhone || ''} onChange={handleNumberChange} disabled={!isEditing} placeholder="1234567" className={`flex-1 rounded-l-none rounded-r-lg font-mono ${inputClass}`} />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Fecha Nacimiento */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div>
+                        <label className={labelClass}>Fecha de Nacimiento <span className="text-red-400">*</span></label>
+                        <div className="relative">
+                            <FaBirthdayCake className="absolute top-3 left-3 text-slate-400 z-10"/>
+                            <input type="date" name="fecha_nacimiento" value={formData.fecha_nacimiento || ''} onChange={handleInputChange} disabled={!isEditing} className={`${inputClass} pl-10 uppercase`} />
+                        </div>
+                        <p className="text-[10px] mt-1 text-slate-400 text-right">
+                           {isMinor ? <span className="text-orange-500 font-bold">ES MENOR DE EDAD</span> : <span className="text-green-600 font-bold">ES MAYOR DE EDAD</span>}
+                        </p>
+                    </div>
+                </div>
+
+                {/* Dirección */}
+                <div>
+                    <label className={labelClass}>Dirección <span className="text-red-400">*</span></label>
+                    <div className="relative">
+                        <FaMapMarkerAlt className="absolute top-3 left-3 text-slate-400 z-10"/>
+                        <textarea rows={2} name="direccion" value={formData.direccion || ''} onChange={handleInputChange} disabled={!isEditing} className={`${inputClass} pl-10 resize-none`} />
+                    </div>
+                </div>
+
+                {/* Condición Médica */}
+                <div className="pt-4 border-t border-slate-100">
+                    <label className={`${labelClass} text-red-400`}>Condición Médica</label>
+                    <textarea rows={2} name="condicion_medica" value={formData.condicion_medica || ''} onChange={handleInputChange} disabled={!isEditing} placeholder="NINGUNA"
+                        className={`${inputClass} ${formData.condicion_medica ? 'bg-red-50 text-red-700 border-red-100' : ''}`} 
+                    />
+                </div>
+
+                {/* --- SECCIÓN REPRESENTANTE (SOLO SI ES MENOR) --- */}
+                {isMinor && (
+                    <div className="pt-4 border-t border-slate-100 bg-orange-50/30 p-4 rounded-xl border border-orange-100 animate-fade-in">
+                        <h4 className="text-xs font-bold text-orange-500 uppercase mb-3 flex items-center gap-2">
+                            <FaUserFriends className="text-lg"/> Datos del Representante (Obligatorio)
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className={labelClass}>Nombre y Apellido Rep.</label>
+                                <input type="text" name="representante_nombre" value={formData.representante_nombre || ''} onChange={handleInputChange} disabled={!isEditing} className={inputClass} />
+                            </div>
+                            
+                            {/* Cédula Representante (Dividida) */}
+                            <div>
+                                <label className={labelClass}>Cédula Rep.</label>
+                                <div className="flex w-full">
+                                    <select name="repCedulaType" value={formData.repCedulaType || 'V'} onChange={handleInputChange} disabled={!isEditing} className={`w-16 ${prefixSelectClass}`}>
+                                        <option value="V">V</option>
+                                        <option value="E">E</option>
+                                    </select>
+                                    <input type="text" name="repCedulaNum" maxLength={10} value={formData.repCedulaNum || ''} onChange={handleNumberChange} disabled={!isEditing} className={`flex-1 rounded-l-none rounded-r-lg font-mono ${inputClass}`} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {isEditing && (
+                    <button type="submit" disabled={saving} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 transition-all flex justify-center items-center gap-2 mt-4">
+                        {saving ? <FaSpinner className="animate-spin" /> : <FaSave />} Guardar Cambios
+                    </button>
+                )}
+            </form>
+        </div>
+
+        {/* --- LISTA DE MATRÍCULAS --- */}
+        <div className="lg:col-span-1 space-y-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-full min-h-[400px]">
+                <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                    <h2 className="font-bold text-slate-800 flex items-center gap-2">
+                        <MdPool className="text-blue-500 text-xl"/> Matrículas Activas
+                    </h2>
+                    <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">
+                        {matriculas.length}
+                    </span>
+                </div>
+
+                <div className="flex-1 p-4 overflow-y-auto max-h-[500px] space-y-3">
+                    {matriculas.length === 0 ? (
+                        <div className="text-center py-10 text-slate-400">
+                            <MdPool className="mx-auto text-4xl opacity-20 mb-2"/>
+                            <p className="text-sm">Sin inscripciones activas.</p>
+                        </div>
+                    ) : (
+                        matriculas.map((mat) => {
+                            const clase = mat.expand?.clase_id;
+                            const profe = clase?.expand?.entrenador_id;
+                            return (
+                                <div key={mat.id} className="border border-slate-100 rounded-xl p-3 bg-white shadow-sm hover:shadow-md transition-all">
+                                    <h4 className="font-bold text-blue-900 text-sm mb-1 uppercase">{clase?.nombre || 'Clase Desconocida'}</h4>
+                                    <p className="text-xs text-slate-500 mb-2 uppercase">
+                                        Prof. {profe ? `${profe.nombre} ${profe.apellido}` : 'Sin asignar'}
+                                    </p>
+                                    <div className="flex justify-between items-center border-t border-slate-50 pt-2">
+                                        <span className="text-xs font-mono font-bold text-green-600">${clase?.costo}</span>
+                                        <span className="text-[10px] bg-green-50 text-green-600 px-2 py-0.5 rounded uppercase font-bold tracking-wider">Activo</span>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+
+                <div className="p-4 border-t border-slate-100 bg-white">
+                    <button 
+                        onClick={() => navigate(`/atletas/matricular/${id}`)}
+                        className="w-full py-3 rounded-xl border-2 border-dashed border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 hover:border-blue-300 transition-all flex justify-center items-center gap-2"
+                    >
+                        <FaPlusCircle /> Nueva Inscripción
+                    </button>
+                </div>
+            </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+export default AtletaPerfil;
 
 ==================================================
 ARCHIVO: .\src\pages\atletas\components\ListAtletas.tsx
 ==================================================
 
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// Iconos
 import { 
-  FaUserAstronaut, 
   FaIdCard, 
-  FaPhoneAlt, 
-  FaMapMarkerAlt, 
-  FaSpinner, 
+  FaSearch, 
+  FaBirthdayCake, 
+  FaBriefcaseMedical, 
+  FaUserFriends,
+  FaArrowRight,
+  FaSpinner,
+  FaSwimmer, // Nuevo icono de usuario
+  FaChevronLeft,
   FaChevronRight,
-  FaSearch
+  FaMapMarkerAlt
 } from 'react-icons/fa';
+
+import { MdPool } from "react-icons/md";
+
+// Tipos y Servicios
 import type { Atleta } from '@/pages/atletas/types';
 import { AtletaError } from '@/pages/atletas/types/error';
 import { getAtletas } from '@/pages/atletas/services/getAtletas';
 
 const ListAtletas: React.FC = () => {
   const navigate = useNavigate();
+
+  // --- ESTADOS DE DATOS ---
   const [atletas, setAtletas] = useState<Atleta[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [filter, setFilter] = useState('');
 
+  // --- ESTADOS DE PAGINACIÓN ---
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  // --- ESTADOS DE FILTRO ---
+  const [filter, setFilter] = useState(''); // Lo que escribe el usuario
+  const [debouncedFilter, setDebouncedFilter] = useState(''); // Lo que enviamos a la BD
+
+  // 1. Efecto Debounce: Espera 500ms después de escribir para ejecutar la búsqueda
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedFilter(filter);
+      setPage(1); // Al buscar, reseteamos a la página 1
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [filter]);
+
+  // 2. Efecto de Carga: Se dispara al cambiar Página o Filtro procesado
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        const data = await getAtletas();
-        setAtletas(data);
+        const data = await getAtletas(page, debouncedFilter);
+        setAtletas(data.items);
+        setTotalPages(data.totalPages);
+        setTotalItems(data.totalItems);
       } catch (err) {
         alert((err as AtletaError).message || 'Error al cargar atletas');
       } finally {
@@ -753,85 +1542,165 @@ const ListAtletas: React.FC = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [page, debouncedFilter]);
 
-  const filteredAtletas = atletas.filter(a => 
-    `${a.nombre} ${a.apellido}`.toLowerCase().includes(filter.toLowerCase()) || 
-    a.cedula.includes(filter)
-  );
-
-  if (loading) return (
-    <div className="flex flex-col justify-center items-center h-screen text-cyan-600">
-      <FaSpinner className="animate-spin text-6xl mb-4" />
-      <p className="font-bold tracking-widest uppercase text-sm">Sincronizando Atletas...</p>
-    </div>
-  );
+  // --- Helper: Calcular Edad ---
+  const calculateAge = (dobString: string) => {
+    if (!dobString) return 'N/A';
+    const dob = new Date(dobString);
+    const diff_ms = Date.now() - dob.getTime();
+    const age_dt = new Date(diff_ms);
+    return Math.abs(age_dt.getUTCFullYear() - 1970);
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header con Buscador */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4 border-b border-slate-200 pb-6">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
+      
+      {/* --- ENCABEZADO Y BUSCADOR --- */}
+      <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-6 border-b border-slate-100 pb-6">
         <div>
-          <h2 className="text-3xl font-extrabold text-slate-800">
-            Censo de <span className="text-cyan-600">Atletas</span>
+          <h2 className="text-3xl font-black uppercase text-slate-800 tracking-tight">
+            Directorio de <span className="text-blue-600">Atletas</span>
           </h2>
-          <p className="text-slate-500">Listado oficial de nadadores inscritos.</p>
+          <p className="text-slate-500 font-medium mt-2 flex items-center gap-2">
+            <MdPool className="text-blue-400"/>
+            <span>Listado Oficial ({totalItems} Registros)</span>
+          </p>
         </div>
-        
-        <div className="relative">
-          <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+
+        {/* Buscador */}
+        <div className="relative w-full md:w-96 group">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <FaSearch className="text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+          </div>
           <input 
             type="text"
-            placeholder="Buscar por nombre o cédula..."
-            className="pl-10 pr-4 py-2 border border-slate-200 rounded-full bg-white focus:ring-2 focus:ring-cyan-500 outline-none w-full md:w-80 transition-all"
+            placeholder="Buscar por nombre, apellido o cédula..."
+            value={filter}
             onChange={(e) => setFilter(e.target.value)}
+            className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl shadow-sm focus:shadow-md focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all text-sm font-medium"
           />
         </div>
       </div>
 
-      {/* Grid de Atletas */}
-      {filteredAtletas.length === 0 ? (
-        <div className="text-center py-20 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-          <p className="text-slate-400">No se encontraron atletas que coincidan con la búsqueda.</p>
+      {/* --- CONTENIDO PRINCIPAL --- */}
+      {loading ? (
+        <div className="flex flex-col justify-center items-center h-64 text-blue-600">
+          <FaSpinner className="animate-spin text-5xl mb-4" />
+          <p className="font-bold tracking-widest uppercase text-xs animate-pulse">Sincronizando...</p>
+        </div>
+      ) : atletas.length === 0 ? (
+        <div className="text-center py-24 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200">
+          <FaSwimmer className="text-6xl text-slate-300 mx-auto mb-4" />
+          <p className="text-slate-500 font-medium">No se encontraron atletas.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {filteredAtletas.map((atleta) => (
-            <div 
-              key={atleta.id}
-              className="group bg-white rounded-2xl p-4 border border-slate-100 shadow-sm hover:shadow-md transition-all cursor-pointer"
-              onClick={() => navigate(`/atletas/detalle/${atleta.id}`)}
-            >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="h-12 w-12 rounded-full bg-cyan-100 flex items-center justify-center text-cyan-600 group-hover:bg-cyan-600 group-hover:text-white transition-colors">
-                  <FaUserAstronaut size={20} />
-                </div>
-                <div className="overflow-hidden">
-                  <h3 className="font-bold text-slate-800 truncate">{atleta.nombre} {atleta.apellido}</h3>
-                  <p className="text-xs text-slate-400 flex items-center gap-1">
-                    <FaIdCard /> {atleta.cedula}
-                  </p>
-                </div>
-              </div>
+        <>
+          {/* GRID DE TARJETAS */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-fade-in-up">
+            {atletas.map((atleta) => {
+              const edad = calculateAge(atleta.fecha_nacimiento);
+              const tieneRepresentante = !!atleta.representante_nombre;
+              const tieneCondicion = !!atleta.condicion_medica;
 
-              <div className="space-y-2 text-sm border-t border-slate-50 pt-3">
-                <div className="flex items-center gap-2 text-slate-600">
-                  <FaPhoneAlt className="text-cyan-500 text-xs" />
-                  <span className="font-mono text-xs">{atleta.telefono || 'N/A'}</span>
-                </div>
-                <div className="flex items-start gap-2 text-slate-500 italic">
-                  <FaMapMarkerAlt className="text-cyan-500 text-xs mt-1 shrink-0" />
-                  <span className="text-xs line-clamp-1">{atleta.direccion || 'Sin dirección'}</span>
-                </div>
-              </div>
+              return (
+                <div 
+                  key={atleta.id}
+                  onClick={() => navigate(`/atletas/perfil/${atleta.id}`)}
+                  className="group relative bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 overflow-hidden cursor-pointer hover:-translate-y-1"
+                >
+                  {/* Borde lateral con gradiente */}
+                  <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-blue-500 to-cyan-300"></div>
 
-              <div className="mt-4 flex justify-between items-center text-xs font-bold text-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                <span>VER MATRÍCULAS</span>
-                <FaChevronRight />
-              </div>
+                  <div className="p-5 pl-7">
+                    
+                    {/* Header Tarjeta: Avatar + Badges */}
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        <FaSwimmer /> {/* Icono Cambiado */}
+                      </div>
+                      
+                      <div className="flex flex-col items-end gap-1">
+                        {tieneCondicion && (
+                          <span className="flex items-center gap-1 px-2 py-1 rounded-md bg-red-50 text-red-600 text-[10px] font-bold border border-red-100 animate-pulse" title={atleta.condicion_medica}>
+                            <FaBriefcaseMedical /> ALERTA
+                          </span>
+                        )}
+                        {tieneRepresentante && (
+                          <span className="flex items-center gap-1 px-2 py-1 rounded-md bg-orange-50 text-orange-600 text-[10px] font-bold border border-orange-100">
+                            <FaUserFriends /> MENOR
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Info Principal */}
+                    <div className="mb-4">
+                      <h3 className="text-lg font-extrabold text-slate-800 leading-tight group-hover:text-blue-600 transition-colors uppercase truncate">
+                        {atleta.nombre} {atleta.apellido}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
+                        <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md flex items-center gap-1">
+                          <FaIdCard className="text-slate-400"/> {atleta.cedula}
+                        </span>
+                        <span className="text-xs font-medium text-slate-400 flex items-center gap-1 px-1">
+                           <FaBirthdayCake className="text-slate-300 mb-0.5"/> {edad} Años
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Datos de Contacto (Resumen) */}
+                    <div className="pt-4 border-t border-slate-50 flex justify-between items-center">
+                      <div className="text-xs text-slate-400 font-medium max-w-[70%]">
+                        {tieneRepresentante ? (
+                          <div className="flex flex-col">
+                             <span className="uppercase text-[10px] text-slate-300 font-bold">Representante</span>
+                             <span className="truncate text-slate-600">{atleta.representante_nombre}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 text-slate-500">
+                             <FaMapMarkerAlt className="text-slate-300"/> 
+                             <span className="truncate">{atleta.direccion || 'Sin dirección'}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <button className="w-8 h-8 rounded-full bg-slate-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
+                         <FaArrowRight size={12} />
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* --- CONTROLES DE PAGINACIÓN --- */}
+          {totalPages > 1 && (
+            <div className="mt-10 flex justify-center items-center gap-4 animate-fade-in">
+                <button 
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-all"
+                >
+                    <FaChevronLeft /> Anterior
+                </button>
+                
+                <span className="font-mono font-bold text-slate-400 text-xs bg-slate-100 px-3 py-1 rounded-lg">
+                    {page} / {totalPages}
+                </span>
+
+                <button 
+                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                    disabled={page === totalPages}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-slate-200 text-slate-600 text-sm font-bold hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm transition-all"
+                >
+                    Siguiente <FaChevronRight />
+                </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -840,31 +1709,344 @@ const ListAtletas: React.FC = () => {
 export default ListAtletas;
 
 ==================================================
+ARCHIVO: .\src\pages\atletas\components\PaymentForm.tsx
+==================================================
+
+import React, { useEffect } from 'react';
+import { MdPayments, MdDateRange } from 'react-icons/md';
+
+export interface IPaymentData {
+  currency: 'USD' | 'BS';
+  paymentMethod: string;
+  paymentAmount: number | '';
+  paymentRef: string;
+  paymentDate: string;
+  coverageDate: string;
+}
+
+interface PaymentProps {
+  paymentData: IPaymentData;
+  setPaymentData: React.Dispatch<React.SetStateAction<IPaymentData>>;
+}
+
+export const PaymentForm: React.FC<PaymentProps> = ({ paymentData, setPaymentData }) => {
+
+  const paymentOptions = {
+    BS: [
+      { value: 'pago_movil', label: 'Pago Móvil' },
+      { value: 'transferencia', label: 'Transferencia Bancaria' },
+      { value: 'efectivo', label: 'Efectivo (Bs)' },
+      { value: 'punto', label: 'Punto de Venta' }
+    ],
+    USD: [
+      { value: 'zelle', label: 'Zelle' },
+      { value: 'efectivo', label: 'Efectivo ($)' },
+      { value: 'binance', label: 'Binance / USDT' },
+      { value: 'transferencia_int', label: 'Transferencia Intl.' }
+    ]
+  };
+  
+  const currentOptions = paymentOptions[paymentData.currency] || paymentOptions.BS;
+
+  // Efecto de Cálculo de Fecha
+  useEffect(() => {
+    if (paymentData.paymentDate) {
+      const [yearStr, monthStr, dayStr] = paymentData.paymentDate.split('-');
+      const year = parseInt(yearStr);
+      const month = parseInt(monthStr);
+      const day = parseInt(dayStr);
+
+      let nextMonth = month + 1;
+      let nextYear = year;
+
+      if (nextMonth > 12) {
+        nextMonth = 1;
+        nextYear = year + 1;
+      }
+
+      const daysInNextMonth = new Date(nextYear, nextMonth, 0).getDate();
+      const finalDay = Math.min(day, daysInNextMonth);
+
+      const mm = String(nextMonth).padStart(2, '0');
+      const dd = String(finalDay).padStart(2, '0');
+      const nextMonthStr = `${nextYear}-${mm}-${dd}`;
+
+      if (paymentData.coverageDate !== nextMonthStr) {
+          setPaymentData(prev => ({ ...prev, coverageDate: nextMonthStr }));
+      }
+    }
+  }, [paymentData.paymentDate, setPaymentData]); 
+
+  // Manejadores
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setPaymentData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCurrencyChange = (currency: 'USD' | 'BS') => {
+    const defaultMethod = paymentOptions[currency][0].value;
+    setPaymentData(prev => ({ 
+      ...prev, 
+      currency, 
+      paymentMethod: defaultMethod,
+      paymentAmount: '', 
+      paymentRef: ''
+    }));
+  };
+
+  return (
+    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mt-6 animate-fade-in">
+      <h3 className="font-bold text-lg mb-6 flex items-center gap-2 text-slate-800">
+        <MdPayments className="text-green-500 text-2xl" /> Registrar Pago Mensual
+      </h3>
+      
+      <div className="space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200">
+            {(['USD', 'BS'] as const).map((curr) => (
+              <button 
+                key={curr} type="button" onClick={() => handleCurrencyChange(curr)}
+                className={`flex-1 py-1.5 rounded font-bold text-xs transition-colors ${paymentData.currency === curr ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                {curr}
+              </button>
+            ))}
+          </div>
+          <select 
+            name="paymentMethod" 
+            value={paymentData.paymentMethod} 
+            onChange={handleChange} 
+            className="w-full bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 p-2 outline-none font-bold uppercase"
+          >
+            {currentOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+          </select>
+        </div>
+        
+        <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
+           <div>
+             <label className="text-xs text-slate-500 font-bold mb-1 block uppercase">
+               Monto a Pagar {paymentData.currency === 'BS' && <span className="text-red-500">*</span>}
+             </label>
+             <div className="relative">
+               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
+                 {paymentData.currency === 'USD' ? '$' : 'Bs'}
+               </span>
+               <input 
+                 type="number" 
+                 name="paymentAmount" 
+                 value={paymentData.paymentAmount} 
+                 onChange={handleChange} 
+                 placeholder="0.00"
+                 min="0"
+                 step="0.01"
+                 className={`w-full bg-white border rounded-lg p-2.5 pl-9 text-sm text-slate-800 font-bold focus:outline-none placeholder-slate-300
+                   ${paymentData.currency === 'BS' && (!paymentData.paymentAmount || Number(paymentData.paymentAmount) <= 0) ? 'border-red-300 focus:border-red-500 focus:ring-red-500/20' : 'border-slate-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20'}
+                 `} 
+               />
+             </div>
+           </div>
+
+           {!paymentData.paymentMethod.includes('efectivo') && (
+             <div>
+               <label className="text-xs text-slate-500 font-bold mb-1 block uppercase">Número de Referencia</label>
+               <input 
+                 type="text" name="paymentRef" value={paymentData.paymentRef} onChange={handleChange} 
+                 placeholder="Ej: 123456" 
+                 className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm text-slate-800 font-medium focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20 uppercase" 
+               />
+             </div>
+           )}
+
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+             <div>
+               <label className="text-xs text-slate-500 font-bold mb-1 block uppercase">Fecha de Pago</label>
+               <input 
+                 type="date" 
+                 name="paymentDate"
+                 value={paymentData.paymentDate}
+                 onChange={handleChange}
+                 className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm text-slate-800 focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20" 
+               />
+             </div>
+
+             <div>
+               <label className="text-xs text-green-600 font-bold mb-1 flex items-center gap-1 uppercase">
+                 <MdDateRange /> Cobertura Hasta
+               </label>
+               <input 
+                 type="date" 
+                 name="coverageDate"
+                 value={paymentData.coverageDate}
+                 onChange={handleChange}
+                 className="w-full bg-green-50 border border-green-200 rounded-lg p-2.5 text-sm text-green-700 font-bold focus:outline-none focus:border-green-500 focus:ring-2 focus:ring-green-500/20" 
+               />
+             </div>
+           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+==================================================
+ARCHIVO: .\src\pages\atletas\services\createMatricula.ts
+==================================================
+
+// src/pages/atletas/services/createMatricula.ts
+import { pb } from "@/lib/pb";
+
+export interface CreateMatriculaConPagoDTO {
+  matricula: {
+    atleta_id: string;
+    clase_id: string;
+    fecha_inscripcion: string;
+    activo: boolean;
+  };
+  pago: {
+    monto: number;
+    referencia: string;
+    fecha_pago: string;
+    cobertura_desde: string;
+    cobertura_hasta: string;
+    // Agrega estos campos si los tienes en tu tabla pagos
+    // moneda: string; 
+    // metodo: string;
+  };
+}
+
+export const createMatricula = async (data: CreateMatriculaConPagoDTO) => {
+  let matriculaCreadaId = null;
+
+  try {
+    // 1. Crear la Matrícula
+    const matricula = await pb.collection('matriculas').create(data.matricula);
+    matriculaCreadaId = matricula.id;
+
+    // 2. Crear el Pago asociado a la nueva matrícula
+    const pagoPayload = {
+      matricula_id: matriculaCreadaId,
+      monto: data.pago.monto,
+      referencia: data.pago.referencia,
+      fecha_pago: data.pago.fecha_pago,
+      cobertura_desde: data.pago.cobertura_desde,
+      cobertura_hasta: data.pago.cobertura_hasta,
+    };
+    
+    await pb.collection('pagos').create(pagoPayload);
+
+    return matricula;
+
+  } catch (error) {
+    // 3. ROLLBACK MANUAL: Si falla el pago, borramos la matrícula
+    if (matriculaCreadaId) {
+      console.warn("Fallo el pago, revirtiendo creación de matrícula...");
+      await pb.collection('matriculas').delete(matriculaCreadaId).catch(console.error);
+    }
+    console.error("Error en la transacción Matrícula-Pago:", error);
+    throw new Error("No se pudo procesar la inscripción y el pago. Intente de nuevo.");
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\atletas\services\getAtletaById.ts
+==================================================
+
+import { pb } from "@/lib/pb";
+import type { Atleta } from "@/pages/atletas/types";
+
+export const getAtletaById = async (id: string): Promise<Atleta> => {
+  try {
+    return await pb.collection('atletas').getOne<Atleta>(id);
+  } catch (error) {
+    console.error("Error getAtletaById:", error);
+    throw new Error("No se pudo cargar la información del atleta.");
+  }
+};
+
+==================================================
 ARCHIVO: .\src\pages\atletas\services\getAtletas.ts
 ==================================================
 
-
 import { pb } from '@/lib/pb';
 import type { Atleta } from '../types';
-import {AtletaNotGetError } from '../types/error';
+import { AtletaNotGetError } from '../types/error';
+import type { ListResult } from 'pocketbase';
 
-export const getAtletas = async (): Promise<Atleta[]> => {
+export const getAtletas = async (page: number = 1, search: string = ''): Promise<ListResult<Atleta>> => {
   try {
-    // Obtenemos todos los registros de la colección 'atletas'
-    // sorted por nombre para que aparezcan ordenados en la lista
-    const records = await pb.collection('atletas').getFullList<Atleta>({
-      filter: 'activo = true',
+    const filterRule = search 
+      ? `(nombre ~ "${search}" || apellido ~ "${search}" || cedula ~ "${search}")`
+      : '';
+
+    // Pagina de 12 en 12 para que cuadre bien en grid de 3 o 4 columnas
+    return await pb.collection('atletas').getList<Atleta>(page, 24, {
+      filter: `${filterRule} ${filterRule ? '&&' : ''} activo = true`, 
       sort: 'nombre',
     });
-
-    return records;
   } catch (error) {
     console.error('Error fetching atletas:', error);
+    throw new AtletaNotGetError('Error al obtener atletas paginados.');
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\atletas\services\getClasesDisponibles.ts
+==================================================
+
+import { pb } from "@/lib/pb";
+import type { Clase } from "../types";
+
+export const getClasesDisponibles = async (): Promise<Clase[]> => {
+  try {
+    // AQUÍ ESTÁ EL CAMBIO: Le indicamos <Clase> a getFullList y lo casteamos
+    const records = await pb.collection('clases').getFullList<Clase>({
+      filter: 'activo = true',
+      expand: 'entrenador_id',
+      sort: 'nombre',
+    });
     
-    
-    throw new AtletaNotGetError(
-        'Error al obtener atletas.'
-    );
+    return records as Clase[];
+  } catch (error) {
+    console.error("Error al obtener clases:", error);
+    throw new Error("No se pudieron cargar las clases disponibles.");
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\atletas\services\getMatriculasByAtletas.ts
+==================================================
+
+import { pb } from "@/lib/pb";
+import type { Matricula } from "@/pages/atletas/types";
+
+export const getMatriculasByAtleta = async (atletaId: string):Promise<Matricula[]> => {
+  try {
+    // Filtramos matrículas activas de este atleta
+    // Expandimos la 'clase_id' para ver nombre, costo y horario
+    return await pb.collection('matriculas').getFullList({
+      filter: `atleta_id="${atletaId}" && activo=true`,
+      sort: '-created',
+      expand: 'clase_id, clase_id.entrenador_id',
+    });
+  } catch (error) {
+    console.error("Error getMatriculasByAtleta:", error);
+    throw new Error("Error al cargar las inscripciones.");
+  }
+};
+
+==================================================
+ARCHIVO: .\src\pages\atletas\services\updateAtleta.ts
+==================================================
+
+import { pb } from "@/lib/pb";
+import type { Atleta } from "@/pages/atletas/types";
+
+export const updateAtleta = async (id: string, data: Partial<Atleta>) => {
+  try {
+    return await pb.collection('atletas').update<Atleta>(id, data);
+  } catch (error) {
+    console.error("Error updateAtleta:", error);
+    throw new Error("Error al guardar los cambios del perfil.");
   }
 };
 
@@ -885,8 +2067,10 @@ export class AtletaNotGetError extends AtletaError {}
 ARCHIVO: .\src\pages\atletas\types\index.ts
 ==================================================
 
+import type { RecordModel } from "pocketbase";
 
-export interface Atleta   {
+// 1. TU INTERFAZ ATLETA INTACTA (No se toca)
+export interface Atleta {
   id: string;
   nombre: string;
   apellido: string;
@@ -895,12 +2079,47 @@ export interface Atleta   {
   direccion: string;
   activo: boolean;
   fecha_nacimiento: string; 
-    representante_nombre?: string;
-    representante_cedula?: string;
-    condicion_medica?: string;
-  // Campos de PocketBase (opcionales pero útiles)
+  representante_nombre?: string;
+  representante_cedula?: string;
+  condicion_medica?: string;
   created?: string;
   updated?: string;
+}
+
+// 2. NUEVAS INTERFACES (Para las Clases y Entrenadores)
+export interface EntrenadorResumen {
+  id: string;
+  nombre: string;
+  apellido: string;
+}
+
+export interface Clase extends RecordModel {
+  id: string;
+  nombre: string;
+  costo: number;
+  edadMin: number;
+  entrenador_id: string;
+  activo: boolean;
+  expand?: {
+    entrenador_id?: EntrenadorResumen;
+  };
+}
+
+// 3. TU INTERFAZ MATRÍCULA (Enriquecida pero compatible hacia atrás)
+export interface Matricula extends RecordModel {
+  id: string;
+  atleta_id: string;
+  clase_id: string;
+  activo: boolean;
+  
+  // -- NUEVOS CAMPOS (Añadidos como opcionales ? para no romper código previo) --
+  fecha_inscripcion?: string;
+  
+  // -- EXPAND MEJORADO --
+  expand?: {
+    atleta_id?: Atleta; // Tu expand original (le pongo ? por si en alguna consulta no haces expand)
+    clase_id?: Clase;   // El nuevo expand que necesitamos para la vista de matrícula
+  };
 }
 
 ==================================================
@@ -2351,6 +3570,7 @@ const EntrenadorPerfil: React.FC = () => {
                         className={`w-28 pl-9 pr-2 rounded-l-lg border-r-0 cursor-pointer appearance-none ${inputBaseClass}`}
                     >
                         <option value="0412">0412</option>
+                        <option value="0422">0412</option>
                         <option value="0414">0414</option>
                         <option value="0424">0424</option>
                         <option value="0416">0416</option>
@@ -2458,7 +3678,7 @@ const EntrenadorPerfil: React.FC = () => {
 
                     {/* BOTÓN VER CLASE */}
                     <button 
-                      onClick={() => navigate(`/clases/${clase.id}`)}
+                      onClick={() => navigate(`/entrenadores/clases/${clase.id}`)}
                       className="flex items-center gap-2 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition-colors border border-blue-100 hover:border-blue-200"
                     >
                       <FaEye className="text-sm" /> Ver Clase
@@ -2829,7 +4049,7 @@ const ListEntrenadores: React.FC = () => {
           {filteredEntrenadores.map((entrenador) => (
             <div 
               key={entrenador.id} 
-              className={`
+              className={` 
                 rounded-xl shadow-sm border overflow-hidden transition-all duration-300
                 ${entrenador.activo 
                   ? 'bg-white border-slate-100 hover:shadow-xl' 
@@ -2881,7 +4101,7 @@ const ListEntrenadores: React.FC = () => {
                   onClick={(e) => { e.stopPropagation(); handleToggleStatus(entrenador); }}
                   disabled={updatingId === entrenador.id}
                   className={`
-                    flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full border transition-all
+                    cursor-pointer flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full border transition-all
                     ${entrenador.activo 
                       ? 'text-red-500 border-red-200 hover:bg-red-50' 
                       : 'text-green-600 border-green-200 hover:bg-green-50'}
@@ -2893,10 +4113,10 @@ const ListEntrenadores: React.FC = () => {
                 </button>
 
                 <button 
-                  className="flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors group/btn"
+                  className="cursor-pointer flex items-center gap-2 text-sm font-semibold text-blue-600 hover:text-blue-800 transition-colors group/btn"
                   onClick={() => navigate(`/entrenadores/perfil/${entrenador.id}`)} 
                 >
-                  Ver Perfil <FaArrowRight className="text-xs group-hover/btn:translate-x-1 transition-transform" />
+                  Ver Perfil <FaArrowRight className="cursor-pointer text-xs group-hover/btn:translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>
@@ -4091,11 +5311,12 @@ export const PersonalDataForm: React.FC<Props> = ({ formData, handleChange, age,
                    onChange={handleChange}
                    className={`bg-gray-100 border border-gray-300 border-r-0 rounded-l-lg text-sm px-2 py-2.5 outline-none focus:bg-white focus:border-blue-500 transition-colors cursor-pointer text-center font-bold text-gray-700 w-20`}
                >
-                   <option value="0412">0412</option>
-                   <option value="0414">0414</option>
-                   <option value="0424">0424</option>
-                   <option value="0416">0416</option>
-                   <option value="0426">0426</option>
+                <option value="0412">0412</option>
+                        <option value="0422">0412</option>
+                        <option value="0414">0414</option>
+                        <option value="0424">0424</option>
+                        <option value="0416">0416</option>
+                        <option value="0426">0426</option>
                </select>
             <input 
                 type="tel" 
@@ -4211,10 +5432,11 @@ export const RepresentativeForm: React.FC<RepProps> = ({ formData, handleChange 
               className="bg-white border border-orange-200 border-r-0 rounded-l-lg text-xs pl-2 py-2 outline-none text-gray-600"
             >
               <option value="0412">0412</option>
-              <option value="0414">0414</option>
-              <option value="0424">0424</option>
-              <option value="0416">0416</option>
-              <option value="0426">0426</option>
+                        <option value="0422">0412</option>
+                        <option value="0414">0414</option>
+                        <option value="0424">0424</option>
+                        <option value="0416">0416</option>
+                        <option value="0426">0426</option>
             </select>
             <input 
               type="tel" 

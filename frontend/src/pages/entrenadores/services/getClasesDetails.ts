@@ -1,5 +1,5 @@
 import { pb } from '@/lib/pb';
-import type { ClaseFull, ClaseHorario, Matricula } from '@/pages/entrenadores/types';
+import type { ClaseFull, ClaseHorario, VistaClaseAlumno } from '@/pages/entrenadores/types';
 import { GetClasesDetailsError } from '@/pages/entrenadores/types/error';
 
 export const getClaseDetails = async (claseId: string) => {
@@ -19,12 +19,11 @@ export const getClaseDetails = async (claseId: string) => {
 
     // 3. Obtener Alumnos Matriculados
     // Solo los activos, expandiendo los datos del atleta
-    const matriculasPromise = pb.collection('matriculas').getFullList<Matricula>({
-      filter: `clase_id="${claseId}" && activo=true`,
-      expand: 'atleta_id',
-      sort: '-created'
-    });
-
+    const matriculasPromise = pb.collection('vista_clase_alumnos').getFullList<VistaClaseAlumno>({
+      filter: `clase_id="${claseId}"`,
+      // Ordenar para que las activas salgan primero, y luego por fecha de cobertura
+      sort: '-matricula_activa,-cobertura_hasta' 
+});
     // Ejecutamos todas las promesas en paralelo
     // Si una falla, el Promise.all lanza el error y cae en el catch
     const [clase, horarios, matriculas] = await Promise.all([

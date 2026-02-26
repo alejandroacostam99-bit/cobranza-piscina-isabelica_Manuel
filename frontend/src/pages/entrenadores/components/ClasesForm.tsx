@@ -17,9 +17,9 @@ import {
 } from 'react-icons/fa';
 
 // Servicios y Tipos
-import { getEntrenadores } from '@/pages/entrenadores/services/getEntrenadores';
 import type { ClaseFormData, Entrenador } from '@/pages/entrenadores/types';
 import { createClaseConHorarios } from '@/pages/entrenadores/services/createClaseHorario';
+import { getEntrenadoresActive } from '@/pages/entrenadores/services/getEntrenadoresActive';
 
 
 const ClasesForm: React.FC = () => {
@@ -46,7 +46,7 @@ const ClasesForm: React.FC = () => {
   useEffect(() => {
     const cargarDatos = async () => {
       try {
-        const data = await getEntrenadores();
+        const data = await getEntrenadoresActive();
         setEntrenadores(data);
       } catch (error) {
         console.error("Error al cargar entrenadores:", error);

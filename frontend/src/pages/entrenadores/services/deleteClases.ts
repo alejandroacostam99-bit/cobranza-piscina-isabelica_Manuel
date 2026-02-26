@@ -1,34 +1,38 @@
+// src/pages/entrenadores/services/deleteClase.ts
 import { pb } from '@/lib/pb';
-import { DeleteClasesError } from '@/pages/entrenadores/types/error';
+import type { Matricula } from '@/pages/atletas/types';
 
-export const deleteClase = async (id: string) => {
+export const deleteClase = async (claseId: string): Promise<boolean> => {
   try {
-    // PASO 1: Desactivar las matrículas asociadas (Soft Delete en Cascada)
-    // Buscamos todas las matrículas que pertenezcan a esta clase y estén activas
-    const matriculasActivas = await pb.collection('matriculas').getFullList({
-        filter: `clase_id="${id}" && activo=true`
+    // 1. Obtenemos todas las matrículas asociadas a esta clase 
+    // que aún no han sido marcadas como eliminadas
+    const matriculasAfectadas = await pb.collection('matriculas').getFullList<Matricula>({
+      filter: `clase_id = "${claseId}" && deleted = false`
     });
 
-    // Preparamos las promesas para actualizar cada matrícula a false
-    const desactivarMatriculasPromises = matriculasActivas.map(m => 
-        pb.collection('matriculas').update(m.id, { activo: false })
-    );
-    
-    // Ejecutamos la actualización de matrículas en paralelo
-    await Promise.all(desactivarMatriculasPromises);
+    // 2. Las marcamos como eliminadas Y las inactivamos por seguridad
+    if (matriculasAfectadas.length > 0) {
+      await Promise.all(
+        matriculasAfectadas.map(m => pb.collection('matriculas').update(m.id, { 
+          deleted: true, 
+          activo: false 
+        }))
+      );
+    }
 
-
-    // PASO 2: Desactivar la Clase (Soft Delete Principal)
-    // En lugar de .delete(), usamos .update()
-    await pb.collection('clases').update(id, { 
-        activo: false 
+    // 3. ELIMINACIÓN LÓGICA DE LA CLASE: 
+    // En lugar de un delete() físico que rompe las relaciones, la desactivamos permanentemente.
+    await pb.collection('clases').update(claseId, {
+      activo: false
+      // Nota: Si agregas un campo "deleted: boolean" a la colección "clases" en Pocketbase,
+      // puedes descomentar la siguiente línea para que no aparezca en ninguna lista regular:
+      // deleted: true 
     });
     
     return true;
-
   } catch (error) {
-    console.error("Error al desactivar la clase:", error);
-    console.error("Error al desactivar las matrículas asociadas:", error);
-    throw new DeleteClasesError("Error al eliminar la clase. Por favor, inténtalo de nuevo.");
+    console.error("Error al 'eliminar' (desactivar) la clase:", error);
+    // OBLIGATORIO: Manejo de errores en la capa de servicios
+    throw new Error("No se pudo desactivar la clase. Verifique su conexión y vuelva a intentarlo.");
   }
 };

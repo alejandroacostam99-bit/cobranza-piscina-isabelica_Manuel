@@ -1,21 +1,41 @@
+// src/pages/atletas/services/getAtletas.ts
 import { pb } from '@/lib/pb';
 import type { Atleta } from '../types';
-import { AtletaNotGetError } from '../types/error';
-import type { ListResult } from 'pocketbase';
 
-export const getAtletas = async (page: number = 1, search: string = ''): Promise<ListResult<Atleta>> => {
+// OBLIGATORIO: Mantener interfaces separadas (puedes mover esto a tu archivo types si prefieres)
+export interface GetAtletasParams {
+  page?: number;
+  perPage?: number;
+  searchTerm?: string;
+  activo?: boolean; // Nuevo parámetro
+}
+
+export const getAtletas = async ({ 
+  page = 1, 
+  perPage = 10, 
+  searchTerm = '', 
+  activo = true // Por defecto buscamos los activos
+}: GetAtletasParams) => {
   try {
-    const filterRule = search 
-      ? `(nombre ~ "${search}" || apellido ~ "${search}" || cedula ~ "${search}")`
-      : '';
+    // 1. Empezamos el filtro con el estado del atleta
+    let filterString = `activo = ${activo}`;
 
-    // Pagina de 12 en 12 para que cuadre bien en grid de 3 o 4 columnas
-    return await pb.collection('atletas').getList<Atleta>(page, 24, {
-      filter: `${filterRule} ${filterRule ? '&&' : ''} activo = true`, 
-      sort: 'nombre',
+    // 2. Si hay un término de búsqueda, lo concatenamos con un AND (&&)
+    if (searchTerm) {
+      // Ajusta los campos por los que quieras buscar
+      filterString += ` && (nombre ~ "${searchTerm}" || apellido ~ "${searchTerm}" || cedula ~ "${searchTerm}")`;
+    }
+
+    // 3. Consulta a PocketBase
+    const result = await pb.collection('atletas').getList<Atleta>(page, perPage, {
+      filter: filterString,
+      sort: '-created', // Ordenar por los más recientes
     });
+
+    return result;
   } catch (error) {
-    console.error('Error fetching atletas:', error);
-    throw new AtletaNotGetError('Error al obtener atletas paginados.');
+    console.error("Error en getAtletas:", error);
+    // OBLIGATORIO: Manejo de errores en servicios
+    throw new Error("Ocurrió un error al cargar la lista de atletas. Verifique su conexión.");
   }
 };
