@@ -147,31 +147,38 @@ const AtletaPerfil: React.FC = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value.replace(/[^0-9]/g, '') }));
   };
-
-  const handleToggleStatus = async () => {
+const handleToggleStatus = async () => {
     if (!atleta || !id) return;
-    const accion = atleta.activo ? 'desactivar' : 'activar';
-    if (!window.confirm(`¿Seguro que deseas ${accion} a este atleta?${atleta.activo ? ' Sus matrículas activas seran eliminadas.' : ''}`)) return;
+    
+    if (atleta.activo) {
+      // --- ESTÁ ACTIVO -> VAMOS A DESACTIVAR ---
+      if (!window.confirm('¿Seguro que deseas DESACTIVAR a este atleta? Todas sus matrículas actuales se darán de baja y pasarán al histórico.')) return;
 
-    setIsToggling(true); setError(null);
-    try {
-      const updated = await toggleAtletaStatus(atleta);
-      setAtleta(updated);
-      if (!updated.activo) {
+      setIsToggling(true);
+      setError(null);
+      try {
+        // Este servicio ahora solo desactiva y limpia matrículas de forma segura
+        const updated = await toggleAtletaStatus(atleta);
+        setAtleta(updated);
+        
+        // Lo pasamos a la pestaña de inactivas visualmente
         setTabMatriculasActivas(false);
-      } else {
-        const data = await getMatriculasByAtleta(id, tabMatriculasActivas);
-        setMatriculas(data);
+        setSuccessMsg("Atleta desactivado correctamente.");
+        setTimeout(() => setSuccessMsg(null), 3000);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Error de conexión al desactivar.");
+      } finally {
+        setIsToggling(false);
       }
-      setSuccessMsg(`Atleta ${!updated.activo ? 'desactivado' : 'activado'} correctamente`);
-      setTimeout(() => setSuccessMsg(null), 3000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error de conexión al cambiar el estado");
-    } finally {
-      setIsToggling(false);
+      
+    } else {
+      // --- ESTÁ INACTIVO -> VAMOS A ACTIVAR ---
+      // NO tocamos la base de datos. Solo avisamos y redirigimos.
+      if (!window.confirm('Para reactivar a un atleta es obligatorio inscribirlo en una clase. Serás redirigido a la pantalla de matriculación.')) return;
+      
+      navigate(`/atletas/matricular/${id}`);
     }
   };
-
   // --- NUEVOS MANEJADORES DE MATRÍCULA ---
   const handleToggleMatricula = async (e: React.MouseEvent, mat: Matricula) => {
     e.stopPropagation(); // Evita navegar a la clase
