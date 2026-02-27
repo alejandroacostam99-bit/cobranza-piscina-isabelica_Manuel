@@ -2,3 +2,6 @@
 .env
 .exe
 /pb_public
+
+
+/backend/pb_data
