@@ -367,7 +367,12 @@ const handleToggleStatus = async () => {
                         <label className={labelClass}>Teléfono <span className="text-red-400">*</span></label>
                         <div className="flex w-full">
                             <select name="phoneCode" value={formData.phoneCode} onChange={handleInputChange} disabled={!isEditing} className={`w-24 ${prefixSelectClass}`}>
-                                <option value="0412">0412</option><option value="0414">0414</option><option value="0424">0424</option><option value="0416">0416</option><option value="0426">0426</option><option value="0241">0241</option>
+                                <option value="0422">0422</option>
+                                <option value="0412">0412</option>
+                                <option value="0414">0414</option>
+                                <option value="0424">0424</option>
+                                <option value="0416">0416</option>
+                                <option value="0426">0426</option>  
                             </select>
                             <input type="text" name="simplePhone" maxLength={7} value={formData.simplePhone || ''} onChange={handleNumberChange} disabled={!isEditing} placeholder="1234567" className={`flex-1 rounded-l-none rounded-r-lg font-mono ${inputClass}`} />
                         </div>
