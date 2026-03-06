@@ -1,27 +1,22 @@
 import { useNavigate } from 'react-router-dom';
+// Volvemos a 'react-icons/fa' (FontAwesome 5) para mantener los nombres originales de tus iconos
 import {
     FaSwimmer,
     FaMoneyBillWave,
     FaChalkboardTeacher,
     FaCalendarAlt,
     FaFileInvoiceDollar
-} from 'react-icons/fa';
-import type { DashboardModuleCard } from '../Types';
+} from 'react-icons/fa'; 
+import type { DashboardModuleCard } from '@/pages/dashboard/Types';
 
 export const ComponentsModuleGrid = () => {
     const navigate = useNavigate();
 
     const modulos: DashboardModuleCard[] = [
         { id: 'atletas', titulo: 'Atletas', descripcion: 'Gestión y perfiles.', ruta: '/atletas', icono: FaSwimmer, colorFondo: 'bg-blue-50 hover:bg-blue-100 border-blue-200', colorIcono: 'text-blue-600' },
-
-        // Petición 2: Pagos apuntando a su ruta real
         { id: 'pagos', titulo: 'Pagos', descripcion: 'Historial y facturas.', ruta: '/pagos', icono: FaMoneyBillWave, colorFondo: 'bg-green-50 hover:bg-green-100 border-green-200', colorIcono: 'text-green-600' },
-
         { id: 'entrenadores', titulo: 'Entrenadores', descripcion: 'Nómina y datos.', ruta: '/entrenadores', icono: FaChalkboardTeacher, colorFondo: 'bg-purple-50 hover:bg-purple-100 border-purple-200', colorIcono: 'text-purple-600' },
-
-        // Petición 1: Cambio a "Deuda" con ruta nueva y colores de alerta (Rose)
         { id: 'deuda', titulo: 'Deuda', descripcion: 'Gestión de morosidad.', ruta: '/deuda', icono: FaFileInvoiceDollar, colorFondo: 'bg-rose-50 hover:bg-rose-100 border-rose-200', colorIcono: 'text-rose-600' },
-
         { id: 'clases', titulo: 'Clases', descripcion: 'Horarios y niveles.', ruta: '/entrenadores/clases', icono: FaCalendarAlt, colorFondo: 'bg-teal-50 hover:bg-teal-100 border-teal-200', colorIcono: 'text-teal-600' }
     ];
 
@@ -31,6 +26,7 @@ export const ComponentsModuleGrid = () => {
             <div className="flex flex-wrap justify-center md:justify-start gap-3 md:gap-4">
                 {modulos.map((modulo) => {
                     const Icono = modulo.icono;
+
                     return (
                         <div
                             key={modulo.id}

@@ -2,43 +2,72 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     FaUsers, FaClipboardList, FaCircleExclamation,
-    FaClock, FaChalkboardUser, FaMoneyBillTrendUp, FaCalendarDay
+    FaClock, FaChalkboardUser
 } from 'react-icons/fa6';
-import { obtenerEstadisticasDashboard } from '../Services/dashboard.service';
+import type { EstadisticasDashboard, ThemeColor } from '../Types'; 
+import { obtenerEstadisticasDashboard } from '@/pages/dashboard/Services/dashboardEstadisticas';
 
 export const DashboardStats = () => {
     const navigate = useNavigate();
-
-    const [stats, setStats] = useState({
-        ingresosMes: 0,
-        deudoresActivos: 0,
-        porVencer: 0,
-        totalAtletas: 0,
-        totalMatriculas: 0,
-        totalEntrenadores: 0
-    });
+    
+    // Estados tipados estrictamente
+    const [stats, setStats] = useState<EstadisticasDashboard | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     useEffect(() => {
         const cargarStats = async () => {
-            const datosReales = await obtenerEstadisticasDashboard();
-            if (datosReales) {
-                setStats(datosReales);
+            try {
+                setLoading(true);
+                setErrorMsg(null);
+                
+                const datosReales = await obtenerEstadisticasDashboard();
+                
+                if (datosReales) {
+                    setStats(datosReales);
+                } else {
+                    setErrorMsg("No se pudieron cargar los datos desde la vista SQL.");
+                }
+            } catch (error) {
+                console.error("Error al cargar estadísticas en UI:", error);
+                setErrorMsg("Ocurrió un error inesperado al conectar con el servidor.");
+            } finally {
+                setLoading(false);
             }
         };
         cargarStats();
     }, []);
 
+    // 1. ESTADO DE CARGA
+    if (loading) {
+        return (
+            <div className="w-full mt-6 mb-6 px-2 text-slate-500 animate-pulse font-medium">
+                Cargando resumen operativo de la academia...
+            </div>
+        );
+    }
+
+    // 2. ESTADO DE ERROR (Si no hay stats, ahora te dirá por qué)
+    if (!stats) {
+        return (
+            <div className="w-full mt-6 mb-6 p-4 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 font-bold shadow-sm flex items-center gap-3">
+                <FaCircleExclamation className="text-xl" />
+                <span>⚠️ {errorMsg || "Error al conectar con las métricas."} Por favor, verifica la vista en PocketBase.</span>
+            </div>
+        );
+    }
+
+    // 3. RENDERIZADO NORMAL (Array de métricas optimizado)
     const estadisticas = [
-        { id: 'ingresos', titulo: 'Ingresos del Mes', valor: `$${stats.ingresosMes}`, tendencia: 'Este mes', tendenciaPositiva: true, icono: FaMoneyBillTrendUp, color: 'emerald', ruta: '/pagos' },
         { id: 'deudores', titulo: 'Deudores Activos', valor: stats.deudoresActivos.toString(), tendencia: 'Urgente', tendenciaPositiva: false, icono: FaCircleExclamation, color: 'rose', ruta: '/deuda' },
         { id: 'por-vencer', titulo: 'Por Vencer', valor: stats.porVencer.toString(), tendencia: 'Aviso', tendenciaPositiva: true, icono: FaClock, color: 'amber', ruta: '/deuda' },
         { id: 'alumnos', titulo: 'Alumnos Activos', valor: stats.totalAtletas.toString(), tendencia: 'Actuales', tendenciaPositiva: true, icono: FaUsers, color: 'blue', ruta: '/atletas' },
         { id: 'matriculas', titulo: 'Matrículas Totales', valor: stats.totalMatriculas.toString(), tendencia: 'Activas', tendenciaPositiva: true, icono: FaClipboardList, color: 'teal', ruta: '/atletas' },
-        { id: 'clases-hoy', titulo: 'Clases de Hoy', valor: '6', tendencia: 'Pendientes', tendenciaPositiva: true, icono: FaCalendarDay, color: 'indigo', ruta: '/entrenadores/clases' },
         { id: 'entrenadores', titulo: 'Entrenadores', valor: stats.totalEntrenadores.toString(), tendencia: 'Plantilla', tendenciaPositiva: true, icono: FaChalkboardUser, color: 'purple', ruta: '/entrenadores' }
     ];
 
-    const themeColors: Record<string, any> = {
+    // Diccionario de colores SIN 'any' (Usando ThemeColor)
+    const themeColors: Record<string, ThemeColor> = {
         emerald: { text: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200', glow: 'from-emerald-400/20' },
         rose: { text: 'text-rose-600', bg: 'bg-rose-50', border: 'border-rose-200', glow: 'from-rose-400/20' },
         amber: { text: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200', glow: 'from-amber-400/20' },
@@ -55,7 +84,6 @@ export const DashboardStats = () => {
                 <h2 className="text-xl lg:text-2xl font-black text-slate-800 tracking-tight">Resumen Operativo</h2>
             </div>
 
-            {/* AQUÍ ESTÁ LA MAGIA: Usamos Flexbox para centrar perfectamente las tarjetas impares en la última fila */}
             <div className="flex flex-wrap justify-center gap-4 lg:gap-5 xl:gap-6">
                 {estadisticas.map((stat) => {
                     const Icono = stat.icono;
@@ -65,7 +93,6 @@ export const DashboardStats = () => {
                         <div
                             key={stat.id}
                             onClick={() => navigate(stat.ruta)}
-                            // Aquí calculamos los anchos exactos para simular las columnas, pero permitiendo el centrado
                             className="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.833rem)] xl:w-[calc(25%-1.125rem)] relative bg-white p-4 lg:p-6 rounded-2xl lg:rounded-[2rem] border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 cursor-pointer overflow-hidden group"
                         >
                             <div className={`absolute -right-8 -top-8 w-32 h-32 lg:w-40 lg:h-40 bg-gradient-to-br ${colors.glow} to-transparent rounded-full blur-2xl lg:blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`}></div>

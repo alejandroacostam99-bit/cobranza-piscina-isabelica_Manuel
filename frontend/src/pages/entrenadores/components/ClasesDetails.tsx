@@ -7,7 +7,7 @@ import type { ClaseFull, Entrenador } from '@/pages/entrenadores/types';
 import type { VistaClaseAlumno } from '@/pages/entrenadores/types'; 
 
 // Servicios de Lectura
-import { getEntrenadores } from '@/pages/entrenadores/services/getEntrenadores';
+
 import { getClaseDetails } from '@/pages/entrenadores/services/getClasesDetails';
 
 // Servicios de Mutación
@@ -26,6 +26,7 @@ import {
   FaBan
 } from 'react-icons/fa';
 import { MdAddCircle, MdDeleteOutline } from "react-icons/md";
+import { getEntrenadoresActive } from '@/pages/entrenadores/services/getEntrenadoresActive';
 
 const ClaseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -71,7 +72,7 @@ const ClaseDetails: React.FC = () => {
         setLoading(true);
         const [details, entrenadoresList] = await Promise.all([
           getClaseDetails(id),
-          getEntrenadores()
+          getEntrenadoresActive()
         ]);
         
         setClase(details.clase);
