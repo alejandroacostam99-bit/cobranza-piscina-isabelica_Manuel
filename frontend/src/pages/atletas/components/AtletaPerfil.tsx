@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
-// Iconos (Se agregaron FaTrash, FaPlay, FaPause)
+// Iconos
 import { 
   FaSave, FaPen, FaArrowLeft, 
   FaIdCard, FaMapMarkerAlt, FaCheckCircle, 
   FaSpinner, FaUndo, FaBirthdayCake, FaBriefcaseMedical, FaUserFriends, FaPlusCircle,
-  FaSwimmer, FaPowerOff, FaToggleOn, FaToggleOff, FaTrash, FaPlay, FaPause
+  FaSwimmer, FaPowerOff, FaToggleOn, FaToggleOff, FaTrash, FaPlay, FaPause, FaMoneyBillWave, FaCalendarAlt
 } from 'react-icons/fa';
 import { MdPool } from "react-icons/md";
 
@@ -27,6 +27,14 @@ interface AtletaFormData extends Partial<Atleta> {
   repCedulaType?: string;
   repCedulaNum?: string;
 }
+// Función para invertir la fecha a DD/MM/AAAA
+const formatToDDMMYYYY = (dateString: string | null | undefined) => {
+  if (!dateString) return '';
+  const [yyyy, mm, dd] = dateString.substring(0, 10).split('-');
+  return `${dd}/${mm}/${yyyy}`;
+};
+// Extendemos el tipo localmente por si TypeScript no detecta el cambio global aún
+type MatriculaUI = Matricula & { ultima_cobertura?: string | null };
 
 const AtletaPerfil: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -34,7 +42,7 @@ const AtletaPerfil: React.FC = () => {
 
   // --- ESTADOS ---
   const [atleta, setAtleta] = useState<Atleta | null>(null);
-  const [matriculas, setMatriculas] = useState<Matricula[]>([]);
+  const [matriculas, setMatriculas] = useState<MatriculaUI[]>([]);
   
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [loadingMatriculas, setLoadingMatriculas] = useState(false);
@@ -42,9 +50,7 @@ const AtletaPerfil: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
   
-  // NUEVO: Estado para saber qué matrícula específica se está procesando
   const [processingMatriculaId, setProcessingMatriculaId] = useState<string | null>(null);
-  
   const [tabMatriculasActivas, setTabMatriculasActivas] = useState<boolean>(true);
   const [formData, setFormData] = useState<AtletaFormData>({});
   
@@ -126,6 +132,7 @@ const AtletaPerfil: React.FC = () => {
     const loadMatriculas = async () => {
       try {
         setLoadingMatriculas(true);
+        // El servicio ya hace el Promise.all internamente y devuelve las matrículas con su fecha
         const data = await getMatriculasByAtleta(id, tabMatriculasActivas);
         setMatriculas(data);
       } catch (err) {
@@ -147,21 +154,17 @@ const AtletaPerfil: React.FC = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value.replace(/[^0-9]/g, '') }));
   };
-const handleToggleStatus = async () => {
+
+  const handleToggleStatus = async () => {
     if (!atleta || !id) return;
     
     if (atleta.activo) {
-      // --- ESTÁ ACTIVO -> VAMOS A DESACTIVAR ---
       if (!window.confirm('¿Seguro que deseas DESACTIVAR a este atleta? Todas sus matrículas actuales se darán de baja y pasarán al histórico.')) return;
-
       setIsToggling(true);
       setError(null);
       try {
-        // Este servicio ahora solo desactiva y limpia matrículas de forma segura
         const updated = await toggleAtletaStatus(atleta);
         setAtleta(updated);
-        
-        // Lo pasamos a la pestaña de inactivas visualmente
         setTabMatriculasActivas(false);
         setSuccessMsg("Atleta desactivado correctamente.");
         setTimeout(() => setSuccessMsg(null), 3000);
@@ -170,35 +173,25 @@ const handleToggleStatus = async () => {
       } finally {
         setIsToggling(false);
       }
-      
     } else {
-      // --- ESTÁ INACTIVO -> VAMOS A ACTIVAR ---
-      // NO tocamos la base de datos. Solo avisamos y redirigimos.
       if (!window.confirm('Para reactivar a un atleta es obligatorio inscribirlo en una clase. Serás redirigido a la pantalla de matriculación.')) return;
-      
       navigate(`/atletas/matricular/${id}`);
     }
   };
-  // --- NUEVOS MANEJADORES DE MATRÍCULA ---
-  const handleToggleMatricula = async (e: React.MouseEvent, mat: Matricula) => {
-    e.stopPropagation(); // Evita navegar a la clase
+
+  const handleToggleMatricula = async (e: React.MouseEvent, mat: MatriculaUI) => {
+    e.stopPropagation();
     if (!window.confirm(`¿Deseas ${mat.activo ? 'pausar' : 'reactivar'} esta matrícula?`)) return;
 
     setProcessingMatriculaId(mat.id);
     try {
         await toggleMatriculaStatus(mat.id, mat.activo);
-        
-        // Operación exitosa: la sacamos de esta pestaña para que el usuario la vea en la otra
         setMatriculas(prev => prev.filter(m => m.id !== mat.id));
         setSuccessMsg(`Matrícula ${mat.activo ? 'pausada' : 'reactivada'} con éxito.`);
         setTimeout(() => setSuccessMsg(null), 3000);
-        
     } catch (err) {
         const errorMsg = err instanceof Error ? err.message : "Error al procesar la solicitud";
         alert(errorMsg);
-        
-        // NUEVO: Si la matrícula era huérfana y el servicio la marcó como eliminada,
-        // la sacamos inmediatamente de la vista para limpiar la interfaz.
         if (errorMsg.includes("descartada del historial")) {
             setMatriculas(prev => prev.filter(m => m.id !== mat.id));
         }
@@ -208,13 +201,12 @@ const handleToggleStatus = async () => {
   };
 
   const handleDeleteMatricula = async (e: React.MouseEvent, matId: string) => {
-    e.stopPropagation(); // Evita navegar a la clase
+    e.stopPropagation(); 
     if (!window.confirm("¿ADVERTENCIA: Estás seguro de eliminar permanentemente esta matrícula del historial? Esta acción no se puede deshacer.")) return;
 
     setProcessingMatriculaId(matId);
     try {
         await deleteMatricula(matId);
-        // La sacamos de la vista inmediatamente
         setMatriculas(prev => prev.filter(m => m.id !== matId));
         setSuccessMsg("Matrícula eliminada correctamente.");
         setTimeout(() => setSuccessMsg(null), 3000);
@@ -297,6 +289,7 @@ const handleToggleStatus = async () => {
         <FaArrowLeft className="mr-2" /> Volver 
       </button>
 
+      {/* --- HEADER --- */}
       <div className={`rounded-t-2xl p-8 text-white shadow-lg flex flex-col md:flex-row items-center justify-between gap-6 mb-6 transition-colors ${!atleta.activo ? 'bg-gradient-to-r from-slate-600 to-slate-500 grayscale-[0.5]' : 'bg-gradient-to-r from-cyan-600 to-blue-600'}`}>
         <div className="flex items-center gap-5">
           <div className="bg-white/20 p-4 rounded-full backdrop-blur-md border-2 border-white/30 shadow-inner">
@@ -328,16 +321,10 @@ const handleToggleStatus = async () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         
-        {/* FORMULARIO */}
+        {/* --- FORMULARIO DATOS (IZQUIERDA) --- */}
         <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6 relative">
-            {!atleta.activo && !isEditing && (
-                <div className="absolute inset-0 bg-slate-50/50 backdrop-grayscale-[0.5] z-10 rounded-2xl flex items-center justify-center pointer-events-none">
-                    <p className="bg-white px-4 py-2 rounded-lg shadow-sm font-bold text-slate-500 border border-slate-200">Atleta Inactivo. Reactívelo para realizar modificaciones.</p>
-                </div>
-            )}
-
             {error && <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded border border-red-100">{error}</div>}
             {successMsg && <div className="mb-4 p-3 bg-green-50 text-green-600 text-sm rounded flex items-center gap-2"><FaCheckCircle/> {successMsg}</div>}
 
@@ -345,11 +332,11 @@ const handleToggleStatus = async () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                         <label className={labelClass}>Nombre <span className="text-red-400">*</span></label>
-                        <input type="text" name="nombre" value={formData.nombre || ''} onChange={handleInputChange} disabled={!isEditing} className={inputClass} />
+                        <input max={50} type="text" name="nombre" value={formData.nombre || ''} onChange={handleInputChange} disabled={!isEditing} className={inputClass} />
                     </div>
                     <div>
                         <label className={labelClass}>Apellido <span className="text-red-400">*</span></label>
-                        <input type="text" name="apellido" value={formData.apellido || ''} onChange={handleInputChange} disabled={!isEditing} className={inputClass} />
+                        <input max={50} type="text" name="apellido" value={formData.apellido || ''} onChange={handleInputChange} disabled={!isEditing} className={inputClass} />
                     </div>
                 </div>
 
@@ -367,12 +354,9 @@ const handleToggleStatus = async () => {
                         <label className={labelClass}>Teléfono <span className="text-red-400">*</span></label>
                         <div className="flex w-full">
                             <select name="phoneCode" value={formData.phoneCode} onChange={handleInputChange} disabled={!isEditing} className={`w-24 ${prefixSelectClass}`}>
-                                <option value="0422">0422</option>
-                                <option value="0412">0412</option>
-                                <option value="0414">0414</option>
-                                <option value="0424">0424</option>
-                                <option value="0416">0416</option>
-                                <option value="0426">0426</option>  
+                                <option value="0422">0422</option><option value="0412">0412</option>
+                                <option value="0414">0414</option><option value="0424">0424</option>
+                                <option value="0416">0416</option><option value="0426">0426</option>  
                             </select>
                             <input type="text" name="simplePhone" maxLength={7} value={formData.simplePhone || ''} onChange={handleNumberChange} disabled={!isEditing} placeholder="1234567" className={`flex-1 rounded-l-none rounded-r-lg font-mono ${inputClass}`} />
                         </div>
@@ -394,13 +378,13 @@ const handleToggleStatus = async () => {
                     <label className={labelClass}>Dirección <span className="text-red-400">*</span></label>
                     <div className="relative">
                         <FaMapMarkerAlt className="absolute top-3 left-3 text-slate-400 z-10"/>
-                        <textarea rows={2} name="direccion" value={formData.direccion || ''} onChange={handleInputChange} disabled={!isEditing} className={`${inputClass} pl-10 resize-none`} />
+                        <textarea maxLength={100} rows={2} name="direccion" value={formData.direccion || ''} onChange={handleInputChange} disabled={!isEditing} className={`${inputClass} pl-10 resize-none`} />
                     </div>
                 </div>
 
                 <div className="pt-4 border-t border-slate-100">
                     <label className={`${labelClass} text-red-400`}>Condición Médica</label>
-                    <textarea rows={2} name="condicion_medica" value={formData.condicion_medica || ''} onChange={handleInputChange} disabled={!isEditing} placeholder="NINGUNA"
+                    <textarea  maxLength={100} rows={2} name="condicion_medica" value={formData.condicion_medica || ''} onChange={handleInputChange} disabled={!isEditing} placeholder="NINGUNA"
                         className={`${inputClass} ${formData.condicion_medica ? 'bg-red-50 text-red-700 border-red-100' : ''}`} />
                 </div>
 
@@ -410,7 +394,7 @@ const handleToggleStatus = async () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label className={labelClass}>Nombre y Apellido Rep.</label>
-                                <input type="text" name="representante_nombre" value={formData.representante_nombre || ''} onChange={handleInputChange} disabled={!isEditing} className={inputClass} />
+                                <input max={50} type="text" name="representante_nombre" value={formData.representante_nombre || ''} onChange={handleInputChange} disabled={!isEditing} className={inputClass} />
                             </div>
                             <div>
                                 <label className={labelClass}>Cédula Rep.</label>
@@ -433,31 +417,57 @@ const handleToggleStatus = async () => {
             </form>
         </div>
 
-        {/* --- LISTA DE MATRÍCULAS --- */}
-        <div className="lg:col-span-1 space-y-6">
-            <div className={`bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-full min-h-[400px] relative ${!atleta.activo ? 'opacity-80' : ''}`}>
+        {/* --- LISTA DE MATRÍCULAS (DERECHA) --- */}
+        <div className="lg:col-span-1 h-full max-h-[750px] flex flex-col">
+            <div className={`bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col h-full relative ${!atleta.activo ? 'opacity-80' : ''}`}>
                 
-                {!atleta.activo && (
-                    <div className="absolute inset-0 bg-slate-50/30 z-10 flex items-center justify-center pointer-events-none"></div>
-                )}
+                {/* Título Superior */}
+                <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center relative z-20">
+                    <h2 className="font-bold text-slate-800 flex items-center gap-2"><MdPool className="text-blue-500 text-xl"/> Matrículas</h2>
+                    <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">{matriculas.length}</span>
+                </div>
 
-                <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-col gap-3">
-                    <div className="flex justify-between items-center">
-                        <h2 className="font-bold text-slate-800 flex items-center gap-2"><MdPool className="text-blue-500 text-xl"/> Historial Clases</h2>
-                        <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-xs font-bold">{matriculas.length}</span>
-                    </div>
+                {/* Acciones Rápidas y Pestañas */}
+                <div className="p-4 border-b border-slate-100 bg-white relative z-20 space-y-4">
                     
-                    <div className="flex bg-slate-200/50 p-1 rounded-lg">
-                        <button onClick={() => setTabMatriculasActivas(true)} className={`flex-1 text-xs py-1.5 rounded-md font-bold transition-all flex justify-center items-center gap-1 cursor-pointer ${tabMatriculasActivas ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+                    {/* Botones Grid 2 Columnas (Armonioso) */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <button 
+                            onClick={() => navigate(`/atletas/matricular/${id}`)}
+                            disabled={!atleta.activo}
+                            className="cursor-pointer py-2 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 font-bold text-xs hover:bg-blue-100 transition-all flex flex-col items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <FaPlusCircle className="text-lg mb-0.5" />
+                            <span>Inscribir</span>
+                        </button>
+
+                        <button 
+                            onClick={() => navigate(`/pagos/atleta/${id}`)}
+                            disabled={!atleta.activo}
+                            className="cursor-pointer py-2 rounded-xl border border-green-200 bg-green-50 text-green-700 font-bold text-xs hover:bg-green-100 transition-all flex flex-col items-center justify-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <FaMoneyBillWave className="text-lg mb-0.5" />
+                            <span>Pagar Mes</span>
+                        </button>
+                    </div>
+
+                    {/* Tabs */}
+                    <div className="flex bg-slate-100 p-1 rounded-lg">
+                        <button onClick={() => setTabMatriculasActivas(true)} className={`flex-1 text-xs py-1.5 rounded font-bold transition-all flex justify-center items-center gap-1 cursor-pointer ${tabMatriculasActivas ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
                             <FaToggleOn className="text-sm" /> Activas
                         </button>
-                        <button onClick={() => setTabMatriculasActivas(false)} className={`flex-1 text-xs py-1.5 rounded-md font-bold transition-all flex justify-center items-center gap-1 cursor-pointer ${!tabMatriculasActivas ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
+                        <button onClick={() => setTabMatriculasActivas(false)} className={`flex-1 text-xs py-1.5 rounded font-bold transition-all flex justify-center items-center gap-1 cursor-pointer ${!tabMatriculasActivas ? 'bg-white text-slate-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>
                             <FaToggleOff className="text-sm" /> Inactivas
                         </button>
                     </div>
                 </div>
 
-                <div className="flex-1 p-4 overflow-y-auto max-h-[500px] space-y-3">
+                {!atleta.activo && (
+                    <div className="absolute inset-0 bg-slate-50/30 z-10 flex items-center justify-center pointer-events-none"></div>
+                )}
+
+                {/* Lista Scrollable */}
+                <div className="flex-1 p-4 overflow-y-auto space-y-3 custom-scrollbar">
                     {loadingMatriculas ? (
                         <div className="flex justify-center py-10"><FaSpinner className="animate-spin text-2xl text-slate-400"/></div>
                     ) : matriculas.length === 0 ? (
@@ -479,17 +489,30 @@ const handleToggleStatus = async () => {
                                     <h4 className="font-bold text-slate-800 text-sm mb-1 uppercase">{clase?.nombre || 'Clase Desconocida'}</h4>
                                     <p className="text-xs text-slate-500 uppercase">Prof. {profe ? `${profe.nombre} ${profe.apellido}` : 'Sin asignar'}</p>
                                     
-                                    {/* SECCIÓN DE BOTONES DE MATRÍCULA */}
+                                    {/* SECCIÓN INFERIOR DE LA MATRÍCULA (Costo, Estados, Vencimiento y Acciones) */}
                                     <div className="flex justify-between items-center border-t border-slate-100 pt-2 mt-2">
-                                        <div className="flex items-center gap-2">
+                                        
+                                        <div className="flex items-center gap-2 flex-wrap">
                                             <span className="text-xs font-mono font-bold text-slate-600">${clase?.costo}</span>
+                                            
                                             <span className={`text-[10px] px-2 py-0.5 rounded uppercase font-bold tracking-wider ${tabMatriculasActivas ? 'bg-green-50 text-green-600' : 'bg-slate-200 text-slate-500'}`}>
                                                 {tabMatriculasActivas ? 'Activa' : 'Inactiva'}
                                             </span>
+
+                                            {/* --- FECHA DE COBERTURA (VENCIMIENTO) --- */}
+                                            <div className="flex items-center gap-1 text-[10px] font-bold ml-1 border-l border-slate-200 pl-2">
+                                                <FaCalendarAlt className={mat.ultima_cobertura ? "text-blue-400" : "text-slate-300"}/>
+                                                {mat.ultima_cobertura ? (
+                                                    <span className="text-slate-500">
+                                                        VENCE: <span className="text-blue-600">{formatToDDMMYYYY(mat.ultima_cobertura)}</span>
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-orange-500">SIN PAGOS</span>
+                                                )}
+                                            </div>
                                         </div>
 
                                         <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
-                                            {/* Activar/Pausar */}
                                             <button 
                                                 title={mat.activo ? 'Pausar matrícula' : 'Reactivar matrícula'}
                                                 onClick={(e) => handleToggleMatricula(e, mat)}
@@ -498,7 +521,6 @@ const handleToggleStatus = async () => {
                                                 {isProcessingThis ? <FaSpinner className="animate-spin text-xs" /> : mat.activo ? <FaPause className="text-xs"/> : <FaPlay className="text-xs"/>}
                                             </button>
                                             
-                                            {/* Eliminar (Soft Delete) */}
                                             <button 
                                                 title="Eliminar matrícula permanentemente"
                                                 onClick={(e) => handleDeleteMatricula(e, mat.id)}
@@ -508,20 +530,11 @@ const handleToggleStatus = async () => {
                                             </button>
                                         </div>
                                     </div>
+
                                 </div>
                             );
                         })
                     )}
-                </div>
-
-                <div className="p-4 border-t border-slate-100 bg-white relative z-20">
-                    <button 
-                        onClick={() => navigate(`/atletas/matricular/${id}`)}
-                        disabled={!atleta.activo}
-                        className="cursor-pointer w-full py-3 rounded-xl border-2 border-dashed border-blue-200 text-blue-600 font-bold text-sm hover:bg-blue-50 hover:border-blue-300 transition-all flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-                    >
-                        <FaPlusCircle /> Nueva Inscripción
-                    </button>
                 </div>
             </div>
         </div>

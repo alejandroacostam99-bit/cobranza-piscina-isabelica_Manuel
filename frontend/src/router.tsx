@@ -16,6 +16,8 @@ import ClasesDetails from "@/pages/entrenadores/components/ClasesDetails";
 import ListAtletas from "@/pages/atletas/components/ListAtletas";
 import AtletaPerfil from "@/pages/atletas/components/AtletaPerfil";
 import AtletaMatricular from "@/pages/atletas/components/AtletaMatricular";
+import PagosPages from "@/pages/pagos/PagosPages";
+import FormPayment from "@/pages/pagos/components/FormPayment";
 
 export const router = createBrowserRouter([
   { 
@@ -38,6 +40,12 @@ export const router = createBrowserRouter([
               { path: "perfil/:id", element: <AtletaPerfil /> },
               { path: "matricular/:id", element: <AtletaMatricular /> },
               {path: "*", element: <Navigate to="/atletas" replace />}
+            ]
+           },
+          { path: "pagos", element: <PagosPages />,
+            children: [
+              { path: "atleta/:id", element: <FormPayment /> },
+              {path: "*", element: <Navigate to="/" replace />}
             ]
            },
           { path: "entrenadores", element: <EntrenadoresPages />,

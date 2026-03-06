@@ -292,6 +292,7 @@ const ClaseDetails: React.FC = () => {
               <div>
                 <label className={labelClass}>Nombre de la Clase</label>
                 <input
+                  maxLength={50}
                   type="text"
                   name="nombre"
                   disabled={!isEditing}
@@ -316,6 +317,7 @@ const ClaseDetails: React.FC = () => {
                 <div>
                   <label className={labelClass}><FaChild className="inline mr-1"/> Edad Min.</label>
                   <input
+                    maxLength={50}
                     type="number"
                     name="edadMin"
                     disabled={!isEditing}

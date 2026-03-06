@@ -1,5 +1,8 @@
 import type { RecordModel } from "pocketbase";
 
+export interface UltimoPago extends RecordModel {
+  cobertura_hasta: string;
+}
 // 1. TU INTERFAZ ATLETA INTACTA (No se toca)
 export interface Atleta {
   id: string;

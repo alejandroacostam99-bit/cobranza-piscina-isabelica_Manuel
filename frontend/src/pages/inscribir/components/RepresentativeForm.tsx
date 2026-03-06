@@ -34,6 +34,7 @@ export const RepresentativeForm: React.FC<RepProps> = ({ formData, handleChange 
         {/* NOMBRES Y APELLIDOS EN MAYÚSCULAS */}
         <div className="grid grid-cols-2 gap-3">
           <InputGroup 
+            maxLength={50}
             label="Nombre" 
             name="repName" 
             value={formData.repName} 
@@ -41,6 +42,7 @@ export const RepresentativeForm: React.FC<RepProps> = ({ formData, handleChange 
             className="bg-white border-orange-200" 
           />
           <InputGroup 
+            maxLength={50}
             label="Apellido" 
             name="repSurname" 
             value={formData.repSurname} 

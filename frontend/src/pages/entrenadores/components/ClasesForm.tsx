@@ -142,7 +142,7 @@ const ClasesForm: React.FC = () => {
     try {
       await createClaseConHorarios(formData);
       alert("✅ Clase y horarios guardados exitosamente.");
-      navigate('/clases');
+      navigate('/entrenadores/clases');
     } catch (error) {
       console.error("Error en la transacción:", error);
       alert("❌ Ocurrió un error al guardar. Intente nuevamente.");
@@ -166,6 +166,7 @@ const ClasesForm: React.FC = () => {
         {/* FILA 1: Nombre y Entrenador */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <InputGroup
+            maxLength={50}
             label="Nombre de la Clase"
             name="nombre"
             value={formData.nombre}

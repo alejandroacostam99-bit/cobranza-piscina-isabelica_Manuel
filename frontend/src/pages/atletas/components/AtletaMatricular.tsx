@@ -131,8 +131,10 @@ const AtletaMatricular: React.FC = () => {
               monto: Number(paymentData.paymentAmount),
               referencia: paymentData.paymentRef.trim() || 'EFECTIVO',
               fecha_pago: paymentData.paymentDate + ' 12:00:00.000Z', 
-              cobertura_desde: paymentData.paymentDate,
-              cobertura_hasta: paymentData.coverageDate,
+              cobertura_desde: paymentData.paymentDate + ' 12:00:00.000Z',
+              cobertura_hasta: paymentData.coverageDate + ' 12:00:00.000Z', 
+              type: paymentData.currency,        
+              metodo: paymentData.paymentMethod, 
           }
       };
 
@@ -156,7 +158,7 @@ const AtletaMatricular: React.FC = () => {
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl animate-fade-in">
       
-      <button onClick={() => navigate(-1)} className="mb-6 flex items-center text-slate-500 hover:text-blue-600 font-medium text-sm transition-colors">
+      <button onClick={() => navigate(-1)} className="cursor-pointer mb-6 flex items-center text-slate-500 hover:text-blue-600 font-medium text-sm transition-colors">
         <FaArrowLeft className="mr-2" /> Volver al Perfil
       </button>
 
@@ -213,7 +215,7 @@ const AtletaMatricular: React.FC = () => {
                                 >
                                     <option value="" disabled className=' text-sm text-wrap'>-- SELECCIONE UNA CLASE --</option>
                                     {clasesFiltradas.map(clase => (
-                                        <option key={clase.id} value={clase.id}>{clase.nombre} | {clase.expand?.entrenador_id?.nombre} | {clase.costo}$ (MIN: {clase.edadMin} salkfsakdksadkhaskjdhashdAÑOS)</option>
+                                        <option key={clase.id} value={clase.id}>{clase.nombre} | {clase.expand?.entrenador_id?.nombre} | {clase.costo}$ (MIN: {clase.edadMin}AÑOS)</option>
                                     ))}
                                 </select>
                             )}

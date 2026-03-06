@@ -43,6 +43,7 @@ export const PersonalDataForm: React.FC<Props> = ({ formData, handleChange, age,
       {/* NOMBRES Y APELLIDOS EN MAYÚSCULAS */}
       <div className="grid grid-cols-2 gap-3">
         <InputGroup 
+            maxLength={50}
             label="Nombres" 
             name="name" 
             value={formData.name} 
@@ -50,6 +51,7 @@ export const PersonalDataForm: React.FC<Props> = ({ formData, handleChange, age,
             required 
         />
         <InputGroup 
+            maxLength={50}
             label="Apellidos" 
             name="surname" 
             value={formData.surname} 
@@ -138,6 +140,7 @@ export const PersonalDataForm: React.FC<Props> = ({ formData, handleChange, age,
       <div>
         <label className="text-xs font-bold text-gray-500 ml-1 block mb-1">Dirección <span className="text-red-500">*</span></label>
         <textarea 
+            maxLength={100}
             name="address" 
             value={formData.address} 
             onChange={handleUpperCase} // También aplicamos mayúsculas a la dirección para consistencia
