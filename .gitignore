@@ -3,5 +3,6 @@
 .exe
 /pb_public
 
+main.exe
 main.go
-/backend/pb_data
+backend/pb_data
